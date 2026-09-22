@@ -18,15 +18,23 @@ aprobando vecinos desde Telegram exactamente como hasta ahora.
    el celular (`lib/sesion.dart`) — al reabrir la app, `arranque.dart`
    decide sola a qué pantalla ir según ese estado.
 
+⚠️ **Bloqueante: falta la carpeta `android/` en el repo.** Sin ella
+`flutter build`/`flutter run` no compilan y Codemagic tampoco puede
+armar el `.apk`. Hay que correr `flutter create .` (una vez) y subir lo
+que genera.
+
 ⏳ **Pendiente:**
 1. **Firebase**: conectar el proyecto real (el de Cuidar+, o uno
    nuevo) — agregar `google-services.json` en `android/app/` y activar
    `firebase_messaging`. Sin esto, los vecinos de la app no reciben
    las alertas de los demás (sí pueden activar las suyas).
-2. **Comando de voz real**: la pantalla de comando de voz hoy es solo
-   informativa. Para que escuche con la pantalla bloqueada hace falta
-   integrar un motor de palabra de activación (ej. Picovoice
-   Porcupine) — se suma en una segunda etapa.
+2. **Comando de voz real**: código listo (`lib/comando_voz_servicio.dart`,
+   con Picovoice Porcupine + servicio en primer plano de Android para
+   escuchar con la pantalla bloqueada). Para que funcione en un build
+   real falta: (a) subir la carpeta `android/` con los permisos que
+   pide `assets/wakewords/LEEME.md`, (b) tu AccessKey gratis de
+   Picovoice, y (c) entrenar los 4 archivos `.ppn` (uno por frase) en
+   console.picovoice.ai — todo el detalle está en ese LEEME.
 3. **Ícono y splash**: falta el ícono real de la app (hoy usa uno
    genérico de Flutter) y configurar `android/app/src/main/res`.
 4. **Límite de frecuencia en `/api/registro`**: es una ruta pública
@@ -64,10 +72,13 @@ lib/
   api.dart                 — cliente HTTP contra el backend
   sesion.dart              — guarda el id_vecino (token) en el celular
   bienvenida.dart          — pantalla de inicio/splash
+  comando_voz_servicio.dart — motor del comando de voz (Picovoice Porcupine + servicio en primer plano)
   pantallas/
     arranque.dart          — primera pantalla; decide a dónde ir según la sesión guardada
     registro.dart          — alta de vecino
     esperando_aprobacion.dart — consulta /api/estado hasta que el admin aprueba
     inicio.dart             — pantalla principal, botón de pánico (ya activa alertas de verdad)
-    comando_voz.dart        — info del comando de voz
+    comando_voz.dart        — pantalla del comando de voz (activa/desactiva la escucha real)
+assets/
+  wakewords/               — archivos de Picovoice del comando de voz (ver LEEME.md ahí)
 ```
