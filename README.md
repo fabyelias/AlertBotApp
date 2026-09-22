@@ -9,7 +9,7 @@ aprobando vecinos desde Telegram exactamente como hasta ahora.
 ✅ Estructura del proyecto Flutter
 ✅ Pantallas: Bienvenida → Registro (nombre, apellido, dirección,
    ubicación) → Espera de aprobación → Inicio (botón de Pánico + menú)
-   → Comando de voz (informativa)
+   → Comando de voz (motor real armado, ver pendiente #2 más abajo)
 ✅ Tema visual verde/blanco de AlertBot
 ✅ **Conectada al backend real** (bot de Telegram, repo
    [fabyelias/AlertBot](https://github.com/fabyelias/AlertBot)):
@@ -35,8 +35,21 @@ que genera.
    pide `assets/wakewords/LEEME.md`, (b) tu AccessKey gratis de
    Picovoice, y (c) entrenar los 4 archivos `.ppn` (uno por frase) en
    console.picovoice.ai — todo el detalle está en ese LEEME.
-3. **Ícono y splash**: falta el ícono real de la app (hoy usa uno
-   genérico de Flutter) y configurar `android/app/src/main/res`.
+3. **Ícono y splash**: diseño y configuración listos — el escudo
+   verde/blanco (`assets/icono/`) más los bloques `flutter_launcher_icons`
+   y `flutter_native_splash` en `pubspec.yaml`. Falta un solo paso, y
+   necesita la carpeta `android/` (y `ios/` si en algún momento se
+   compila para iPhone) ya generada:
+
+   ```bash
+   flutter pub get
+   dart run flutter_launcher_icons
+   dart run flutter_native_splash:create
+   ```
+
+   Eso escribe los `.png` de cada resolución directo en
+   `android/app/src/main/res` (e `ios/Runner/Assets.xcassets`); no hay
+   nada más que tocar a mano.
 4. **Límite de frecuencia en `/api/registro`**: es una ruta pública
    que le escribe al admin por Telegram en cada llamada; conviene
    sumar un límite antes de publicar la app.
@@ -81,4 +94,6 @@ lib/
     comando_voz.dart        — pantalla del comando de voz (activa/desactiva la escucha real)
 assets/
   wakewords/               — archivos de Picovoice del comando de voz (ver LEEME.md ahí)
+  icono/                    — ícono y logo del splash (escudo verde/blanco), usados por
+                              flutter_launcher_icons y flutter_native_splash (ver pubspec.yaml)
 ```
