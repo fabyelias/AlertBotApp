@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../tema.dart';
 import '../api.dart';
+import '../sesion.dart';
 import 'esperando_aprobacion.dart';
 
 class PantallaRegistro extends StatefulWidget {
@@ -53,16 +54,17 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
     }
     setState(() => _enviando = true);
     try {
-      // TODO: reemplazar 'token_push_pendiente' por el token real de
-      // Firebase Cloud Messaging una vez integrado.
-      await AlertBotApi.registrarVecino(
+      // token_push: se suma cuando se integre Firebase Cloud Messaging
+      // (ver README, paso 2). Hasta entonces el vecino queda registrado
+      // igual, pero las alertas no le van a llegar por notificación push.
+      final idVecino = await AlertBotApi.registrarVecino(
         nombre: _nombreCtrl.text.trim(),
         apellido: _apellidoCtrl.text.trim(),
         direccion: _direccionCtrl.text.trim(),
         lat: _ubicacion!.latitude,
         lon: _ubicacion!.longitude,
-        tokenPush: 'token_push_pendiente',
       );
+      await Sesion.guardarIdVecino(idVecino);
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const PantallaEsperandoAprobacion()),

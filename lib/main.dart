@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'tema.dart';
-import 'bienvenida.dart';
+import 'pantallas/arranque.dart';
 
 void main() {
   runApp(const AlertBotApp());
@@ -15,7 +15,7 @@ class AlertBotApp extends StatelessWidget {
       title: 'AlertBot',
       debugShowCheckedModeBanner: false,
       theme: temaAlertBot(),
-      home: const PantallaBienvenida(),
+      home: const PantallaArranque(),
     );
   }
 }
