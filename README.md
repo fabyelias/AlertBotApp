@@ -51,9 +51,15 @@ que genera.
    Eso escribe los `.png` de cada resolución directo en
    `android/app/src/main/res` (e `ios/Runner/Assets.xcassets`); no hay
    nada más que tocar a mano.
-4. **Límite de frecuencia en `/api/registro`**: es una ruta pública
-   que le escribe al admin por Telegram en cada llamada; conviene
-   sumar un límite antes de publicar la app.
+4. ✅ **Límite de frecuencia en `/api/registro`**: hecho, pero vive en
+   el otro repo ([fabyelias/AlertBot](https://github.com/fabyelias/AlertBot),
+   rama `claude/limite-frecuencia-registro`, todavía no mergeada ni
+   deployada) — máximo 5 registros por IP por hora
+   (`limitador.py` + `api_app.py`). Importante: esto **no reemplaza**
+   el punto "anti-duplicados" que se charló aparte (que la misma
+   persona no pueda tener varias solicitudes activas a la vez) — ese
+   sigue sin resolver y depende de tener algún dato estable del vecino
+   (ver Firebase, pendiente #1).
 
 ## Cómo compilarla
 
