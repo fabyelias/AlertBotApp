@@ -35,8 +35,9 @@ que genera.
    pide `assets/wakewords/LEEME.md`, (b) tu AccessKey gratis de
    Picovoice, y (c) entrenar los 4 archivos `.ppn` (uno por frase) en
    console.picovoice.ai — todo el detalle está en ese LEEME.
-3. **Ícono y splash**: diseño y configuración listos — el escudo
-   verde/blanco (`assets/icono/`) más los bloques `flutter_launcher_icons`
+3. **Ícono y splash**: diseño y configuración listos — escudo con
+   gradiente verde, casa y corazón (`assets/icono/`, el diseño que
+   pasó el usuario) más los bloques `flutter_launcher_icons`
    y `flutter_native_splash` en `pubspec.yaml`. Falta un solo paso, y
    necesita la carpeta `android/` (y `ios/` si en algún momento se
    compila para iPhone) ya generada:
