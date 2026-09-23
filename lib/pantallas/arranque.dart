@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import '../api.dart';
 import '../sesion.dart';
@@ -35,6 +37,11 @@ class _PantallaArranqueState extends State<PantallaArranque> {
       return;
     }
 
+    // Mejor esfuerzo, en paralelo: si el registro original no consiguió
+    // un token de notificaciones (o Firebase lo rotó después), esto lo
+    // corrige solo en cada apertura, sin bloquear ni molestar si falla.
+    unawaited(_refrescarTokenPush(id));
+
     try {
       final estado = await AlertBotApi.consultarEstado(id);
       if (estado == 'aprobado') {
@@ -49,6 +56,17 @@ class _PantallaArranqueState extends State<PantallaArranque> {
       }
     } catch (_) {
       if (mounted) setState(() => _error = 'No pudimos conectar con el servidor.');
+    }
+  }
+
+  Future<void> _refrescarTokenPush(String idVecino) async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token == null) return;
+      await AlertBotApi.actualizarTokenPush(idVecino: idVecino, tokenPush: token);
+    } catch (_) {
+      // sin conexión puntual, o todavía sin permiso: no pasa nada, se
+      // reintenta solo la próxima vez que se abra la app
     }
   }
 

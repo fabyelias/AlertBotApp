@@ -193,6 +193,25 @@ class AlertBotApi {
     );
   }
 
+  /// Actualiza el token de notificaciones del vecino. A diferencia de
+  /// /api/registro (pública), esta ruta pide el id_vecino propio, así
+  /// que nadie puede tocar el token de otro. Sirve tanto si el registro
+  /// original no consiguió uno (Google Play Services no listo, sin
+  /// internet, permiso aceptado tarde) como si Firebase lo rotó después.
+  static Future<void> actualizarTokenPush({
+    required String idVecino,
+    required String tokenPush,
+  }) async {
+    final resp = await http
+        .post(
+          Uri.parse('$baseUrl/api/token-push'),
+          headers: _headersJson,
+          body: jsonEncode({'id_vecino': idVecino, 'token_push': tokenPush}),
+        )
+        .timeout(_espera);
+    if (resp.statusCode != 200) throw _error(resp);
+  }
+
   /// Si el vecino tiene una ronda propia activa, y quiénes están haciendo
   /// ronda ahora mismo en el barrio.
   static Future<EstadoRondas> consultarRondas(String idVecino) async {

@@ -76,12 +76,15 @@ en primer plano para el comando de voz.
 (no comparte con Cuidar+): `google-services.json` en `android/app/`,
 plugin de Gradle, `Firebase.initializeApp()` al arrancar, y
 `registro.dart` pide permiso de notificaciones y manda el token de FCM
-al registrarse. Del lado del bot (`fabyelias/AlertBot`, rama
-`claude/push-notificaciones-app`, todavía sin mergear ni deployar):
+al registrarse; `arranque.dart` lo vuelve a mandar en cada apertura
+(`POST /api/token-push`), por si ese primer intento falló (Google Play
+Services no listo, sin internet, permiso aceptado tarde) o Firebase lo
+rotó después — sin esto, un vecino podía quedar sin notificaciones para
+siempre sin ninguna forma de corregirlo (nos pasó probando en la
+tablet). Del lado del bot (`fabyelias/AlertBot`, ya en `main`):
 `push.py` manda la notificación a cada vecino de la app cuando se
-activa un pánico cerca — antes ese token se guardaba pero no se usaba
-para nada. Falta que mergees esa rama y cargues la variable de entorno
-`FIREBASE_SERVICE_ACCOUNT_JSON` en Railway (instrucciones en el README
+activa un pánico, ronda o foto/clip cerca. Necesita la variable de
+entorno `FIREBASE_SERVICE_ACCOUNT_JSON` cargada en Railway (instrucciones en el README
 de ese repo) — sin eso, el push queda desactivado en silencio.
 
 ⏳ **Pendiente:**
@@ -158,7 +161,7 @@ lib/
   comando_voz_servicio.dart — motor del comando de voz (Picovoice Porcupine + servicio en primer plano)
                               — en pausa, no enlazado desde el menú (ver pendiente #2)
   pantallas/
-    arranque.dart          — primera pantalla; decide a dónde ir según la sesión guardada
+    arranque.dart          — primera pantalla; decide a dónde ir según la sesión guardada, y de paso refresca el token de notificaciones (POST /api/token-push)
     registro.dart          — alta de vecino
     esperando_aprobacion.dart — consulta /api/estado hasta que el admin aprueba
     inicio.dart             — pantalla principal, botón de pánico (ya activa alertas de verdad)
