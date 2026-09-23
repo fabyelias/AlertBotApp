@@ -9,7 +9,6 @@ aprobando vecinos desde Telegram exactamente como hasta ahora.
 ✅ Estructura del proyecto Flutter
 ✅ Pantallas: Bienvenida → Registro (nombre, apellido, dirección,
    ubicación) → Espera de aprobación → Inicio (botón de Pánico + menú)
-   → Comando de voz (motor real armado, ver pendiente #2 más abajo)
 ✅ Tema visual verde/blanco de AlertBot
 ✅ **Conectada al backend real** (bot de Telegram, repo
    [fabyelias/AlertBot](https://github.com/fabyelias/AlertBot)):
@@ -33,13 +32,18 @@ en primer plano para el comando de voz.
    nuevo) — agregar `google-services.json` en `android/app/` y activar
    `firebase_messaging`. Sin esto, los vecinos de la app no reciben
    las alertas de los demás (sí pueden activar las suyas).
-2. **Comando de voz real**: código y permisos de Android listos
-   (`lib/comando_voz_servicio.dart` + el `<service>` y los
-   `uses-permission` en `AndroidManifest.xml`). Lo único que falta ya
-   no depende de este repo, son pasos tuyos en console.picovoice.ai:
-   (a) tu AccessKey gratis de Picovoice, y (b) entrenar los 4 archivos
-   `.ppn` (uno por frase) — todo el detalle está en
-   `assets/wakewords/LEEME.md`.
+2. **Comando de voz real — en pausa.** El código está armado
+   (`lib/comando_voz_servicio.dart` + `lib/pantallas/comando_voz.dart`
+   + el `<service>` y los `uses-permission` de Android), pero **se sacó
+   el acceso desde la pantalla de Inicio** (ya no aparece esa tarjeta
+   en el menú) porque el registro en console.picovoice.ai está roto:
+   su formulario rechaza mails gratuitos (Gmail, etc.) con "valid
+   company email", es un bug conocido de ellos, reportado por varios
+   usuarios más, sin arreglo todavía. Los archivos siguen en el repo,
+   listos para retomarlo cuando: (a) Picovoice arregle el registro o te
+   den acceso por soporte, o (b) se decida cambiar a otro motor sin
+   necesidad de cuenta (ej. Vosk, offline). Detalle de lo que hace
+   falta en `assets/wakewords/LEEME.md`.
 3. ✅ **Ícono y splash**: hecho — escudo con gradiente verde, casa y
    corazón (el diseño que pasaste), ya generado en todas las
    resoluciones dentro de `android/app/src/main/res/` (íconos legacy,
@@ -89,12 +93,13 @@ lib/
   sesion.dart              — guarda el id_vecino (token) en el celular
   bienvenida.dart          — pantalla de inicio/splash
   comando_voz_servicio.dart — motor del comando de voz (Picovoice Porcupine + servicio en primer plano)
+                              — en pausa, no enlazado desde el menú (ver pendiente #2)
   pantallas/
     arranque.dart          — primera pantalla; decide a dónde ir según la sesión guardada
     registro.dart          — alta de vecino
     esperando_aprobacion.dart — consulta /api/estado hasta que el admin aprueba
     inicio.dart             — pantalla principal, botón de pánico (ya activa alertas de verdad)
-    comando_voz.dart        — pantalla del comando de voz (activa/desactiva la escucha real)
+    comando_voz.dart        — pantalla del comando de voz — en pausa, no enlazado desde el menú
 assets/
   wakewords/               — archivos de Picovoice del comando de voz (ver LEEME.md ahí)
   icono/                    — ícono y logo del splash (escudo verde/blanco), usados por

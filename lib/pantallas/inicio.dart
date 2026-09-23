@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../api.dart';
 import '../sesion.dart';
 import '../tema.dart';
-import 'comando_voz.dart';
 
 /// Categorías de pánico: la clave es la que entiende el backend
 /// (ver CATEGORIAS_PANICO en config.py del bot), el texto es lo que ve
@@ -132,13 +131,6 @@ class _PantallaInicioState extends State<PantallaInicio> {
                   children: [
                     _TarjetaAccion(icono: Icons.photo_camera_rounded, titulo: 'Foto / clip', onTap: () {}),
                     _TarjetaAccion(icono: Icons.directions_walk_rounded, titulo: 'Rondas', onTap: () {}),
-                    _TarjetaAccion(
-                      icono: Icons.record_voice_over_rounded,
-                      titulo: 'Comando de voz',
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const PantallaComandoVoz()),
-                      ),
-                    ),
                     _TarjetaAccion(icono: Icons.local_phone_rounded, titulo: 'Emergencias', onTap: () {}),
                   ],
                 ),
