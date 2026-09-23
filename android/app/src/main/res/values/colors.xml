@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- AlertBotColores.fondo (#F7FAF8) en lib/tema.dart -->
+    <color name="fondo_splash">#F7FAF8</color>
+</resources>

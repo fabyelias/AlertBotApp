@@ -18,39 +18,35 @@ aprobando vecinos desde Telegram exactamente como hasta ahora.
    el celular (`lib/sesion.dart`) — al reabrir la app, `arranque.dart`
    decide sola a qué pantalla ir según ese estado.
 
-⚠️ **Bloqueante: falta la carpeta `android/` en el repo.** Sin ella
-`flutter build`/`flutter run` no compilan y Codemagic tampoco puede
-armar el `.apk`. Hay que correr `flutter create .` (una vez) y subir lo
-que genera.
+✅ **Carpeta `android/` generada y subida** (con `flutter create .` desde
+una tablet, vía Termux + proot-distro con Debian). El proyecto ya
+compila.
+
+✅ **Permisos de Android agregados** en `AndroidManifest.xml`: internet
+y ubicación (sin esto el registro y las alertas ni siquiera podían
+llamar al backend — no eran parte de los 4 pendientes originales, pero
+sin ellos la app no funciona en un celular real) más micrófono/servicio
+en primer plano para el comando de voz.
 
 ⏳ **Pendiente:**
 1. **Firebase**: conectar el proyecto real (el de Cuidar+, o uno
    nuevo) — agregar `google-services.json` en `android/app/` y activar
    `firebase_messaging`. Sin esto, los vecinos de la app no reciben
    las alertas de los demás (sí pueden activar las suyas).
-2. **Comando de voz real**: código listo (`lib/comando_voz_servicio.dart`,
-   con Picovoice Porcupine + servicio en primer plano de Android para
-   escuchar con la pantalla bloqueada). Para que funcione en un build
-   real falta: (a) subir la carpeta `android/` con los permisos que
-   pide `assets/wakewords/LEEME.md`, (b) tu AccessKey gratis de
-   Picovoice, y (c) entrenar los 4 archivos `.ppn` (uno por frase) en
-   console.picovoice.ai — todo el detalle está en ese LEEME.
-3. **Ícono y splash**: diseño y configuración listos — escudo con
-   gradiente verde, casa y corazón (`assets/icono/`, el diseño que
-   pasó el usuario) más los bloques `flutter_launcher_icons`
-   y `flutter_native_splash` en `pubspec.yaml`. Falta un solo paso, y
-   necesita la carpeta `android/` (y `ios/` si en algún momento se
-   compila para iPhone) ya generada:
-
-   ```bash
-   flutter pub get
-   dart run flutter_launcher_icons
-   dart run flutter_native_splash:create
-   ```
-
-   Eso escribe los `.png` de cada resolución directo en
-   `android/app/src/main/res` (e `ios/Runner/Assets.xcassets`); no hay
-   nada más que tocar a mano.
+2. **Comando de voz real**: código y permisos de Android listos
+   (`lib/comando_voz_servicio.dart` + el `<service>` y los
+   `uses-permission` en `AndroidManifest.xml`). Lo único que falta ya
+   no depende de este repo, son pasos tuyos en console.picovoice.ai:
+   (a) tu AccessKey gratis de Picovoice, y (b) entrenar los 4 archivos
+   `.ppn` (uno por frase) — todo el detalle está en
+   `assets/wakewords/LEEME.md`.
+3. ✅ **Ícono y splash**: hecho — escudo con gradiente verde, casa y
+   corazón (el diseño que pasaste), ya generado en todas las
+   resoluciones dentro de `android/app/src/main/res/` (íconos legacy,
+   ícono adaptativo de Android 8+, y la splash screen). Los bloques
+   `flutter_launcher_icons`/`flutter_native_splash` en `pubspec.yaml`
+   quedan igual por si en algún momento cambia el diseño y hay que
+   regenerar todo desde `assets/icono/` con Flutter instalado.
 4. ✅ **Límite de frecuencia en `/api/registro`**: hecho, pero vive en
    el otro repo ([fabyelias/AlertBot](https://github.com/fabyelias/AlertBot),
    rama `claude/limite-frecuencia-registro`, todavía no mergeada ni

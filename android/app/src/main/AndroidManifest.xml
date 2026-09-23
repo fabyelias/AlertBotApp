@@ -1,4 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Para hablar con el backend (registro, estado, pánico) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Para la ubicación del registro y el radio de alertas cercanas -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- Comando de voz (ver lib/comando_voz_servicio.dart y assets/wakewords/LEEME.md) -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <application
         android:label="alertbot_app"
         android:name="${applicationName}"
@@ -30,6 +40,13 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- Servicio en primer plano del comando de voz (flutter_foreground_task):
+             mantiene viva la escucha de Porcupine con la pantalla bloqueada.
+             Ver lib/comando_voz_servicio.dart. -->
+        <service
+            android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
+            android:foregroundServiceType="microphone"
+            android:exported="false" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
