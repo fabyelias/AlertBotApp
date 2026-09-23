@@ -27,11 +27,26 @@ llamar al backend — no eran parte de los 4 pendientes originales, pero
 sin ellos la app no funciona en un celular real) más micrófono/servicio
 en primer plano para el comando de voz.
 
+✅ **Firebase conectado del lado de la app** (proyecto `alertbotapp`,
+propio, no comparte con Cuidar+) — ver pendiente #1 para lo que falta
+del lado del bot.
+
 ⏳ **Pendiente:**
-1. **Firebase**: conectar el proyecto real (el de Cuidar+, o uno
-   nuevo) — agregar `google-services.json` en `android/app/` y activar
-   `firebase_messaging`. Sin esto, los vecinos de la app no reciben
-   las alertas de los demás (sí pueden activar las suyas).
+1. **Firebase — hecho del lado de la app, falta el bot.** Proyecto
+   nuevo `alertbotapp` en Firebase (no comparte con Cuidar+),
+   `google-services.json` en `android/app/`, plugin de Gradle
+   conectado, y `lib/main.dart` inicializa Firebase al arrancar.
+   `lib/pantallas/registro.dart` pide permiso de notificaciones,
+   consigue el token de FCM del celular y lo manda como `token_push`
+   al registrarse. **Pero esto no alcanza solo**: revisé
+   `fabyelias/AlertBot` y el backend guarda ese `token_push` en la
+   base pero **nunca lo usa** — no hay ningún código ahí que mande la
+   notificación en sí (solo avisa por Telegram). Falta agregar
+   Firebase Admin del lado del bot para que, cuando se activa un
+   pánico, además de Telegram le mande la notificación push a cada
+   vecino cercano que se registró desde la app. Sin eso, esto queda
+   con el token guardado pero sin usar — mismo síntoma que antes
+   ("no reciben las alertas de los demás").
 2. **Comando de voz real — en pausa.** El código está armado
    (`lib/comando_voz_servicio.dart` + `lib/pantallas/comando_voz.dart`
    + el `<service>` y los `uses-permission` de Android), pero **se sacó

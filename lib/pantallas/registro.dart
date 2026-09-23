@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../tema.dart';
@@ -46,6 +47,21 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(texto)));
   }
 
+  /// Pide permiso de notificaciones y devuelve el token de FCM del
+  /// celular. Si el vecino lo rechaza o falla, se registra igual sin
+  /// token — el panico y el registro no dependen de esto, solo se
+  /// pierde el aviso por notificación push (le siguen llegando las
+  /// alertas si abre la app).
+  Future<String?> _tokenPush() async {
+    try {
+      final permiso = await FirebaseMessaging.instance.requestPermission();
+      if (permiso.authorizationStatus == AuthorizationStatus.denied) return null;
+      return await FirebaseMessaging.instance.getToken();
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> _enviarRegistro() async {
     if (!_formKey.currentState!.validate()) return;
     if (_ubicacion == null) {
@@ -54,15 +70,14 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
     }
     setState(() => _enviando = true);
     try {
-      // token_push: se suma cuando se integre Firebase Cloud Messaging
-      // (ver README, paso 2). Hasta entonces el vecino queda registrado
-      // igual, pero las alertas no le van a llegar por notificación push.
+      final tokenPush = await _tokenPush();
       final idVecino = await AlertBotApi.registrarVecino(
         nombre: _nombreCtrl.text.trim(),
         apellido: _apellidoCtrl.text.trim(),
         direccion: _direccionCtrl.text.trim(),
         lat: _ubicacion!.latitude,
         lon: _ubicacion!.longitude,
+        tokenPush: tokenPush,
       );
       await Sesion.guardarIdVecino(idVecino);
       if (!mounted) return;

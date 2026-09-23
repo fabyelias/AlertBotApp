@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "739300206920",
+    "project_id": "alertbotapp",
+    "storage_bucket": "alertbotapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:739300206920:android:9d1f638a79729429cceb7d",
+        "android_client_info": {
+          "package_name": "com.example.alertbot_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBn0Oo2ITILgFJXBuHdEWEm8TSYHWozcRM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
