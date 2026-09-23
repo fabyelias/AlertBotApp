@@ -10,13 +10,32 @@ aprobando vecinos desde Telegram exactamente como hasta ahora.
 ✅ Pantallas: Bienvenida → Registro (nombre, apellido, dirección,
    ubicación) → Espera de aprobación → Inicio (botón de Pánico + menú)
 ✅ **Interfaz rediseñada** (`lib/tema.dart` + pantallas): encabezado con
-   degradé de marca, tarjetas con sombra suave, botón de Pánico con halo,
-   y feedback real al tocar cualquier botón — nada queda "muerto". La
-   pantalla de **Emergencias** ahora llama de verdad a los números fijos
-   del bot (`NUMEROS_EMERGENCIA` en `config.py`, replicados en
-   `lib/pantallas/emergencias.dart`) usando `url_launcher`. "Foto/clip" y
-   "Rondas" siguen sin implementarse, pero avisan "Próximamente" al
-   tocarlas en vez de no hacer nada.
+   degradé de marca y saludo por nombre, tarjetas con sombra suave, botón
+   de Pánico con halo, y feedback real al tocar cualquier botón — nada
+   queda "muerto".
+✅ **Menú real del bot, no solo Pánico.** Se grabó un video usando el bot
+   de Telegram (teclado persistente con 11 botones) y se replicaron en la
+   app las funciones que tiene sentido que use un vecino común:
+   - 📞 **Emergencias**: llama de verdad a los números fijos del bot
+     (`NUMEROS_EMERGENCIA` en `config.py`, replicados en
+     `lib/pantallas/emergencias.dart`) usando `url_launcher`.
+   - 🚶 **Rondas** (`lib/pantallas/rondas.dart`): iniciar/terminar ronda,
+     ver quién está haciendo ronda ahora, y cerrar con una novedad
+     (presets tipo "Perro suelto" o texto libre) — mismo flujo que
+     Telegram, mismos mensajes a los vecinos.
+   - 📍 **Mi dirección** (`lib/pantallas/mi_direccion.dart`) y
+     👨‍👩‍👧 **Mi familia** (`lib/pantallas/mi_familia.dart`, invita por
+     `share_plus` con el link de un solo uso que genera el bot): solo
+     visibles si el vecino es titular de su grupo familiar
+     (`es_titular` en `/api/estado`), igual que en Telegram.
+
+   Quedan **a propósito** fuera de la app: 📋 Historial, ⚙️ Vecinos, 🩺
+   Estado del bot, 🔔 Probar sirena y 🗂️ Categorías de voz son
+   herramientas *solo de administrador* en el bot — no tiene sentido
+   exponérselas a un vecino común. 📸 **Foto/clip** sigue como
+   "Próximamente" (necesita subida de archivos, que el backend no
+   soporta todavía) y 🎙️ **Comando de voz** sigue en pausa (ver
+   pendiente #2).
 ✅ **Conectada al backend real** (bot de Telegram, repo
    [fabyelias/AlertBot](https://github.com/fabyelias/AlertBot)):
    registro, consulta de estado y botón de pánico funcionan de punta a
@@ -125,6 +144,9 @@ lib/
     esperando_aprobacion.dart — consulta /api/estado hasta que el admin aprueba
     inicio.dart             — pantalla principal, botón de pánico (ya activa alertas de verdad)
     emergencias.dart        — números de emergencia fijos, llama con url_launcher
+    rondas.dart              — iniciar/terminar ronda, con novedades al cerrar
+    mi_familia.dart          — integrantes e invitación (solo titular)
+    mi_direccion.dart        — actualizar dirección (solo titular)
     comando_voz.dart        — pantalla del comando de voz — en pausa, no enlazado desde el menú
 assets/
   wakewords/               — archivos de Picovoice del comando de voz (ver LEEME.md ahí)

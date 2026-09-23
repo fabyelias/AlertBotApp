@@ -3,6 +3,9 @@ import '../api.dart';
 import '../sesion.dart';
 import '../tema.dart';
 import 'emergencias.dart';
+import 'mi_direccion.dart';
+import 'mi_familia.dart';
+import 'rondas.dart';
 
 /// Categorías de pánico: la clave es la que entiende el backend
 /// (ver CATEGORIAS_PANICO en config.py del bot), el texto es lo que ve
@@ -23,6 +26,25 @@ class PantallaInicio extends StatefulWidget {
 
 class _PantallaInicioState extends State<PantallaInicio> {
   bool _activando = false;
+  PerfilVecino? _perfil;
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarPerfil();
+  }
+
+  Future<void> _cargarPerfil() async {
+    final id = await Sesion.leerIdVecino();
+    if (id == null) return;
+    try {
+      final perfil = await AlertBotApi.consultarPerfil(id);
+      if (mounted) setState(() => _perfil = perfil);
+    } catch (_) {
+      // sin conexión puntual: el resto de la pantalla igual funciona,
+      // solo no se personaliza el saludo ni se sabe si es titular
+    }
+  }
 
   Future<void> _mostrarCategorias() async {
     if (_activando) return; // ya hay una alerta en curso, no abrir otra
@@ -120,6 +142,22 @@ class _PantallaInicioState extends State<PantallaInicio> {
     Navigator.push(context, MaterialPageRoute(builder: (_) => const PantallaEmergencias()));
   }
 
+  void _abrirRondas() {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const PantallaRondas()));
+  }
+
+  void _abrirMiFamilia() {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const PantallaMiFamilia()));
+  }
+
+  Future<void> _abrirMiDireccion() async {
+    final actualizada = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (_) => PantallaMiDireccion(direccionActual: _perfil?.direccion ?? '')),
+    );
+    if (actualizada == true) _cargarPerfil();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -128,7 +166,7 @@ class _PantallaInicioState extends State<PantallaInicio> {
         bottom: false,
         child: Column(
           children: [
-            _Encabezado(onTocarNotificacion: () => _mostrarProximamente('Las notificaciones')),
+            _Encabezado(onTocarNotificacion: () => _mostrarProximamente('Las notificaciones'), nombre: _perfil?.nombre),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
@@ -163,16 +201,10 @@ class _PantallaInicioState extends State<PantallaInicio> {
                       childAspectRatio: 0.95,
                       children: [
                         _TarjetaAccion(
-                          icono: Icons.photo_camera_rounded,
-                          titulo: 'Foto / clip',
-                          subtitulo: 'Próximamente',
-                          onTap: () => _mostrarProximamente('Foto / clip'),
-                        ),
-                        _TarjetaAccion(
                           icono: Icons.directions_walk_rounded,
                           titulo: 'Rondas',
-                          subtitulo: 'Próximamente',
-                          onTap: () => _mostrarProximamente('Rondas'),
+                          subtitulo: 'Iniciar / cerrar',
+                          onTap: _abrirRondas,
                         ),
                         _TarjetaAccion(
                           icono: Icons.local_phone_rounded,
@@ -180,6 +212,26 @@ class _PantallaInicioState extends State<PantallaInicio> {
                           subtitulo: 'Números útiles',
                           onTap: _abrirEmergencias,
                         ),
+                        _TarjetaAccion(
+                          icono: Icons.photo_camera_rounded,
+                          titulo: 'Foto / clip',
+                          subtitulo: 'Próximamente',
+                          onTap: () => _mostrarProximamente('Foto / clip'),
+                        ),
+                        if (_perfil?.esTitular ?? true) ...[
+                          _TarjetaAccion(
+                            icono: Icons.home_rounded,
+                            titulo: 'Mi dirección',
+                            subtitulo: 'Actualizarla',
+                            onTap: _abrirMiDireccion,
+                          ),
+                          _TarjetaAccion(
+                            icono: Icons.family_restroom_rounded,
+                            titulo: 'Mi familia',
+                            subtitulo: 'Sumar integrantes',
+                            onTap: _abrirMiFamilia,
+                          ),
+                        ],
                       ],
                     ),
                     const SizedBox(height: 24),
@@ -196,7 +248,8 @@ class _PantallaInicioState extends State<PantallaInicio> {
 
 class _Encabezado extends StatelessWidget {
   final VoidCallback onTocarNotificacion;
-  const _Encabezado({required this.onTocarNotificacion});
+  final String? nombre;
+  const _Encabezado({required this.onTocarNotificacion, this.nombre});
 
   @override
   Widget build(BuildContext context) {
@@ -212,8 +265,8 @@ class _Encabezado extends StatelessWidget {
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Row(
+            children: [
+              const Row(
                 children: [
                   Icon(Icons.shield_rounded, color: Colors.white, size: 24),
                   SizedBox(width: 8),
@@ -223,10 +276,10 @@ class _Encabezado extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: 6),
+              const SizedBox(height: 6),
               Text(
-                'Tu barrio, cuidado entre todos',
-                style: TextStyle(color: Colors.white70, fontSize: 13),
+                (nombre != null && nombre!.isNotEmpty) ? 'Hola, $nombre 👋' : 'Tu barrio, cuidado entre todos',
+                style: const TextStyle(color: Colors.white70, fontSize: 13),
               ),
             ],
           ),
