@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
@@ -51,6 +52,14 @@ class IntegranteFamilia {
   final String nombre;
   final String apellido;
   const IntegranteFamilia({required this.nombre, required this.apellido});
+}
+
+/// Una foto o video ya descargado, listo para mostrar.
+class ContenidoCompartido {
+  final Uint8List bytes;
+  final String tipoMime;
+  const ContenidoCompartido({required this.bytes, required this.tipoMime});
+  bool get esVideo => tipoMime.startsWith('video/');
 }
 
 class InfoFamilia {
@@ -302,5 +311,38 @@ class AlertBotApi {
     final resp = await http.Response.fromStream(enviado);
     if (resp.statusCode != 200) throw _error(resp);
     return _cuerpo(resp)['alerta_id'] as int? ?? 0;
+  }
+
+  /// Baja la foto/video de una alerta (por ejemplo, la que llegó por
+  /// push cuando otro vecino compartió algo cerca).
+  static Future<ContenidoCompartido> descargarFoto({
+    required String idVecino,
+    required int alertaId,
+  }) async {
+    final uri = Uri.parse('$baseUrl/api/foto/$alertaId').replace(queryParameters: {'id_vecino': idVecino});
+    final resp = await http.get(uri).timeout(_esperaArchivo);
+    if (resp.statusCode != 200) throw _error(resp);
+    return ContenidoCompartido(
+      bytes: resp.bodyBytes,
+      tipoMime: resp.headers['content-type'] ?? 'application/octet-stream',
+    );
+  }
+
+  /// Reporta una foto/video (por ejemplo, contenido obsceno) a los
+  /// administradores. Lanza [ErrorApi] con código 409 si esa alerta no
+  /// existe, no es una foto/video, o este vecino ya la había reportado.
+  static Future<void> reportarFoto({
+    required String idVecino,
+    required int alertaId,
+    required String motivo,
+  }) async {
+    final resp = await http
+        .post(
+          Uri.parse('$baseUrl/api/foto/$alertaId/reportar'),
+          headers: _headersJson,
+          body: jsonEncode({'id_vecino': idVecino, 'motivo': motivo}),
+        )
+        .timeout(_espera);
+    if (resp.statusCode != 200) throw _error(resp);
   }
 }

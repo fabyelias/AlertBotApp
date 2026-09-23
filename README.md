@@ -33,10 +33,22 @@ aprobando vecinos desde Telegram exactamente como hasta ahora.
      vecinos exactamente igual que si se lo hubieran mandado al bot por
      Telegram (la app sube los bytes a `POST /api/foto`, que por dentro
      los sube a Telegram para conseguir un `file_id` y reusa la misma
-     difusión de siempre). Los vecinos de la app reciben un push cuando
-     alguien comparte algo cerca; verlo *dentro* de la app (en vez de
-     solo el aviso) queda para más adelante — el backend ya tiene
-     `GET /api/foto/{alerta_id}` listo para eso.
+     difusión de siempre).
+   - **Ver lo que comparten otros vecinos** (`lib/pantallas/ver_foto.dart`):
+     cuando a un vecino de la app le llega un push de que alguien
+     compartió algo cerca, tocarlo (o tocar "Ver" si la app estaba
+     abierta — Android no muestra sola una notificación de sistema en
+     ese caso) abre la foto/video (`lib/main.dart` engancha
+     `onMessageOpenedApp`/`getInitialMessage`/`onMessage` de
+     `firebase_messaging` para esto). **Video todavía no se reproduce
+     dentro de la app** (evitamos sumar `video_player`/`chewie` por
+     ahora, para no arriesgar el build como pasó con el comando de voz)
+     — se avisa igual que se compartió uno, y se puede reportar.
+   - **Reportar contenido** (botón "Reportar" en esa misma pantalla):
+     manda el motivo (obsceno, spam, no corresponde, u otro a mano) a
+     `POST /api/foto/{alerta_id}/reportar`, que se lo reenvía al
+     administrador por Telegram junto con la foto/video para que decida
+     si corresponde dar de baja a quien la subió.
 
    Quedan **a propósito** fuera de la app: 📋 Historial, ⚙️ Vecinos, 🩺
    Estado del bot, 🔔 Probar sirena y 🗂️ Categorías de voz son
@@ -155,6 +167,7 @@ lib/
     mi_familia.dart          — integrantes e invitación (solo titular)
     mi_direccion.dart        — actualizar dirección (solo titular)
     foto.dart                — sacar/grabar/elegir y mandar una foto o video
+    ver_foto.dart             — ver lo que compartió otro vecino (llega por push) y reportarlo
     comando_voz.dart        — pantalla del comando de voz — en pausa, no enlazado desde el menú
 assets/
   wakewords/               — archivos de Picovoice del comando de voz (ver LEEME.md ahí)
