@@ -27,9 +27,11 @@ subprojects {
 // con la cadena hash 'android-37'"), así que se lo forzamos a todos los
 // módulos Android por igual.
 subprojects {
-    afterEvaluate {
-        extensions.findByType(com.android.build.gradle.BaseExtension::class.java)?.let { ext ->
-            ext.compileSdkVersion(36)
+    listOf("com.android.application", "com.android.library").forEach { id ->
+        plugins.withId(id) {
+            extensions.configure<com.android.build.gradle.BaseExtension> {
+                compileSdkVersion(36)
+            }
         }
     }
 }
