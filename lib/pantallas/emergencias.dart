@@ -20,12 +20,24 @@ const _numerosEmergencia = [
 class PantallaEmergencias extends StatelessWidget {
   const PantallaEmergencias({super.key});
 
+  /// Abre el marcador del teléfono con el número cargado — no llama
+  /// directo (ni Android ni el usuario lo permitirían para una app
+  /// externa): hay que tocar el botón verde para confirmar. En un
+  /// dispositivo sin línea (como una tablet sin chip) no hay nada que
+  /// hacer del lado de la app; mostramos el número para marcarlo a mano
+  /// tanto si url_launcher devuelve que no pudo como si tira una
+  /// excepción (pasa en algunos equipos sin app de teléfono instalada).
   Future<void> _llamar(BuildContext context, String numero) async {
     final uri = Uri(scheme: 'tel', path: numero);
-    final pudoAbrir = await launchUrl(uri);
+    var pudoAbrir = false;
+    try {
+      pudoAbrir = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      pudoAbrir = false;
+    }
     if (!pudoAbrir && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No pudimos abrir el marcador. Llamá al $numero a mano.')),
+        SnackBar(content: Text('Este dispositivo no puede llamar. Marcá $numero desde un teléfono con línea.')),
       );
     }
   }
@@ -44,7 +56,8 @@ class PantallaEmergencias extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             const Text(
-              'Tocá "Llamar" para marcar directo.',
+              'Tocá "Llamar" para abrir el marcador con el número cargado '
+              '(confirmás vos el llamado). Necesita un teléfono con línea.',
               style: TextStyle(color: AlertBotColores.textoSuave),
             ),
             const SizedBox(height: 20),
