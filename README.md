@@ -42,18 +42,26 @@ de ese repo) — sin eso, el push queda desactivado en silencio.
 ⏳ **Pendiente:**
 1. ✅ **Firebase**: hecho (ver arriba). Solo falta que mergees la rama
    del bot y cargues `FIREBASE_SERVICE_ACCOUNT_JSON` en Railway.
-2. **Comando de voz real — en pausa.** El código está armado
-   (`lib/comando_voz_servicio.dart` + `lib/pantallas/comando_voz.dart`
-   + el `<service>` y los `uses-permission` de Android), pero **se sacó
-   el acceso desde la pantalla de Inicio** (ya no aparece esa tarjeta
-   en el menú) porque el registro en console.picovoice.ai está roto:
-   su formulario rechaza mails gratuitos (Gmail, etc.) con "valid
-   company email", es un bug conocido de ellos, reportado por varios
-   usuarios más, sin arreglo todavía. Los archivos siguen en el repo,
-   listos para retomarlo cuando: (a) Picovoice arregle el registro o te
-   den acceso por soporte, o (b) se decida cambiar a otro motor sin
-   necesidad de cuenta (ej. Vosk, offline). Detalle de lo que hace
-   falta en `assets/wakewords/LEEME.md`.
+2. **Comando de voz real — en pausa, y ahora también sin sus paquetes.**
+   El código Dart sigue en el repo (`lib/comando_voz_servicio.dart` +
+   `lib/pantallas/comando_voz.dart`, sin usarse — ninguna pantalla los
+   importa), pero se sacaron de `pubspec.yaml` sus tres dependencias
+   nativas (`porcupine_flutter`, `permission_handler`,
+   `flutter_foreground_task`) y del `AndroidManifest.xml` sus permisos
+   y el `<service>`: `permission_handler_android` exige mínimo SDK de
+   Android **37** (todavía en preview en este momento), y eso rompía
+   la compilación de **toda** la app, no solo la del comando de voz.
+   No tenía sentido dejar tres paquetes sin usar bloqueando el resto.
+
+   Aparte sigue el motivo original: el registro en console.picovoice.ai
+   está roto (rechaza mails gratuitos como Gmail con "valid company
+   email", bug conocido de ellos, sin arreglo todavía). Para retomar
+   esto hace falta: (a) que Picovoice arregle el registro o te den
+   acceso por soporte, o se decida cambiar a otro motor sin cuenta
+   (ej. Vosk, offline) — *y* (b) volver a agregar esos tres paquetes
+   a `pubspec.yaml` y sus permisos al manifest (una vez que el SDK 37
+   sea estable, o fijando una versión más vieja de `permission_handler`
+   que no lo exija). Detalle en `assets/wakewords/LEEME.md`.
 3. ✅ **Ícono y splash**: hecho — escudo con gradiente verde, casa y
    corazón (el diseño que pasaste), ya generado en todas las
    resoluciones dentro de `android/app/src/main/res/` (íconos legacy,
