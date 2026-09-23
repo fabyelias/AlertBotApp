@@ -27,26 +27,21 @@ llamar al backend — no eran parte de los 4 pendientes originales, pero
 sin ellos la app no funciona en un celular real) más micrófono/servicio
 en primer plano para el comando de voz.
 
-✅ **Firebase conectado del lado de la app** (proyecto `alertbotapp`,
-propio, no comparte con Cuidar+) — ver pendiente #1 para lo que falta
-del lado del bot.
+✅ **Firebase conectado, app y bot.** Proyecto propio `alertbotapp`
+(no comparte con Cuidar+): `google-services.json` en `android/app/`,
+plugin de Gradle, `Firebase.initializeApp()` al arrancar, y
+`registro.dart` pide permiso de notificaciones y manda el token de FCM
+al registrarse. Del lado del bot (`fabyelias/AlertBot`, rama
+`claude/push-notificaciones-app`, todavía sin mergear ni deployar):
+`push.py` manda la notificación a cada vecino de la app cuando se
+activa un pánico cerca — antes ese token se guardaba pero no se usaba
+para nada. Falta que mergees esa rama y cargues la variable de entorno
+`FIREBASE_SERVICE_ACCOUNT_JSON` en Railway (instrucciones en el README
+de ese repo) — sin eso, el push queda desactivado en silencio.
 
 ⏳ **Pendiente:**
-1. **Firebase — hecho del lado de la app, falta el bot.** Proyecto
-   nuevo `alertbotapp` en Firebase (no comparte con Cuidar+),
-   `google-services.json` en `android/app/`, plugin de Gradle
-   conectado, y `lib/main.dart` inicializa Firebase al arrancar.
-   `lib/pantallas/registro.dart` pide permiso de notificaciones,
-   consigue el token de FCM del celular y lo manda como `token_push`
-   al registrarse. **Pero esto no alcanza solo**: revisé
-   `fabyelias/AlertBot` y el backend guarda ese `token_push` en la
-   base pero **nunca lo usa** — no hay ningún código ahí que mande la
-   notificación en sí (solo avisa por Telegram). Falta agregar
-   Firebase Admin del lado del bot para que, cuando se activa un
-   pánico, además de Telegram le mande la notificación push a cada
-   vecino cercano que se registró desde la app. Sin eso, esto queda
-   con el token guardado pero sin usar — mismo síntoma que antes
-   ("no reciben las alertas de los demás").
+1. ✅ **Firebase**: hecho (ver arriba). Solo falta que mergees la rama
+   del bot y cargues `FIREBASE_SERVICE_ACCOUNT_JSON` en Railway.
 2. **Comando de voz real — en pausa.** El código está armado
    (`lib/comando_voz_servicio.dart` + `lib/pantallas/comando_voz.dart`
    + el `<service>` y los `uses-permission` de Android), pero **se sacó
