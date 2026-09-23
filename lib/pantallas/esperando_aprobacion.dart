@@ -89,7 +89,12 @@ class _PantallaEsperandoAprobacionState extends State<PantallaEsperandoAprobacio
   }
 
   List<Widget> _vistaEspera() => [
-        const Icon(Icons.hourglass_top_rounded, size: 72, color: AlertBotColores.verdePrincipal),
+        Container(
+          width: 104,
+          height: 104,
+          decoration: const BoxDecoration(color: AlertBotColores.verdeClaro, shape: BoxShape.circle),
+          child: const Icon(Icons.hourglass_top_rounded, size: 48, color: AlertBotColores.verdePrincipal),
+        ),
         const SizedBox(height: 24),
         const Text(
           '¡Listo! Tu solicitud está en revisión',

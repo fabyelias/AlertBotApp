@@ -15,13 +15,14 @@ class PantallaBienvenida extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 120,
-                height: 120,
-                decoration: const BoxDecoration(
-                  color: AlertBotColores.verdePrincipal,
+                width: 128,
+                height: 128,
+                decoration: BoxDecoration(
+                  gradient: gradienteAlertBot,
                   shape: BoxShape.circle,
+                  boxShadow: sombraTarjeta(color: AlertBotColores.verdePrincipal),
                 ),
-                child: const Icon(Icons.shield_moon_rounded, color: Colors.white, size: 64),
+                child: const Icon(Icons.shield_rounded, color: Colors.white, size: 64),
               ),
               const SizedBox(height: 28),
               const Text(

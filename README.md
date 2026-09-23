@@ -9,7 +9,14 @@ aprobando vecinos desde Telegram exactamente como hasta ahora.
 ✅ Estructura del proyecto Flutter
 ✅ Pantallas: Bienvenida → Registro (nombre, apellido, dirección,
    ubicación) → Espera de aprobación → Inicio (botón de Pánico + menú)
-✅ Tema visual verde/blanco de AlertBot
+✅ **Interfaz rediseñada** (`lib/tema.dart` + pantallas): encabezado con
+   degradé de marca, tarjetas con sombra suave, botón de Pánico con halo,
+   y feedback real al tocar cualquier botón — nada queda "muerto". La
+   pantalla de **Emergencias** ahora llama de verdad a los números fijos
+   del bot (`NUMEROS_EMERGENCIA` en `config.py`, replicados en
+   `lib/pantallas/emergencias.dart`) usando `url_launcher`. "Foto/clip" y
+   "Rondas" siguen sin implementarse, pero avisan "Próximamente" al
+   tocarlas en vez de no hacer nada.
 ✅ **Conectada al backend real** (bot de Telegram, repo
    [fabyelias/AlertBot](https://github.com/fabyelias/AlertBot)):
    registro, consulta de estado y botón de pánico funcionan de punta a
@@ -117,6 +124,7 @@ lib/
     registro.dart          — alta de vecino
     esperando_aprobacion.dart — consulta /api/estado hasta que el admin aprueba
     inicio.dart             — pantalla principal, botón de pánico (ya activa alertas de verdad)
+    emergencias.dart        — números de emergencia fijos, llama con url_launcher
     comando_voz.dart        — pantalla del comando de voz — en pausa, no enlazado desde el menú
 assets/
   wakewords/               — archivos de Picovoice del comando de voz (ver LEEME.md ahí)
