@@ -28,14 +28,21 @@ aprobando vecinos desde Telegram exactamente como hasta ahora.
      `share_plus` con el link de un solo uso que genera el bot): solo
      visibles si el vecino es titular de su grupo familiar
      (`es_titular` en `/api/estado`), igual que en Telegram.
+   - 📸 **Foto/clip** (`lib/pantallas/foto.dart`): sacar foto, grabar un
+     video corto o elegir de la galería, y mandarlo — llega a los
+     vecinos exactamente igual que si se lo hubieran mandado al bot por
+     Telegram (la app sube los bytes a `POST /api/foto`, que por dentro
+     los sube a Telegram para conseguir un `file_id` y reusa la misma
+     difusión de siempre). Los vecinos de la app reciben un push cuando
+     alguien comparte algo cerca; verlo *dentro* de la app (en vez de
+     solo el aviso) queda para más adelante — el backend ya tiene
+     `GET /api/foto/{alerta_id}` listo para eso.
 
    Quedan **a propósito** fuera de la app: 📋 Historial, ⚙️ Vecinos, 🩺
    Estado del bot, 🔔 Probar sirena y 🗂️ Categorías de voz son
    herramientas *solo de administrador* en el bot — no tiene sentido
-   exponérselas a un vecino común. 📸 **Foto/clip** sigue como
-   "Próximamente" (necesita subida de archivos, que el backend no
-   soporta todavía) y 🎙️ **Comando de voz** sigue en pausa (ver
-   pendiente #2).
+   exponérselas a un vecino común. 🎙️ **Comando de voz** sigue en pausa
+   (ver pendiente #2).
 ✅ **Conectada al backend real** (bot de Telegram, repo
    [fabyelias/AlertBot](https://github.com/fabyelias/AlertBot)):
    registro, consulta de estado y botón de pánico funcionan de punta a
@@ -147,6 +154,7 @@ lib/
     rondas.dart              — iniciar/terminar ronda, con novedades al cerrar
     mi_familia.dart          — integrantes e invitación (solo titular)
     mi_direccion.dart        — actualizar dirección (solo titular)
+    foto.dart                — sacar/grabar/elegir y mandar una foto o video
     comando_voz.dart        — pantalla del comando de voz — en pausa, no enlazado desde el menú
 assets/
   wakewords/               — archivos de Picovoice del comando de voz (ver LEEME.md ahí)

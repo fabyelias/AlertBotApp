@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 /// El servidor respondió con un error (o con algo que la app no entiende).
 /// Los fallos de red (sin conexión, timeout) NO son esto: se propagan como
@@ -75,6 +76,9 @@ class InfoFamilia {
 class AlertBotApi {
   static const String baseUrl = 'https://alertbot-production-eee7.up.railway.app';
   static const Duration _espera = Duration(seconds: 15);
+  // Subir/bajar una foto o video tarda más que un pedido de JSON chico,
+  // sobre todo con una conexión de barrio floja.
+  static const Duration _esperaArchivo = Duration(seconds: 60);
   static const _headersJson = {'Content-Type': 'application/json'};
 
   static Map<String, dynamic> _cuerpo(http.Response resp) {
@@ -273,5 +277,30 @@ class AlertBotApi {
         .timeout(_espera);
     if (resp.statusCode != 200) throw _error(resp);
     return _cuerpo(resp)['integrantes_afectados'] as int? ?? 0;
+  }
+
+  /// Sube una foto o video para compartir con los vecinos — mismo destino
+  /// que si se lo hubieran mandado al bot por Telegram. `tipoMime` tiene
+  /// que ser uno de los que acepta el backend (image/jpeg, image/png,
+  /// image/webp, video/mp4, video/quicktime, video/3gpp). Devuelve el id
+  /// de la alerta creada.
+  static Future<int> enviarFoto({
+    required String idVecino,
+    required List<int> bytes,
+    required String nombreArchivo,
+    required String tipoMime,
+  }) async {
+    final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/api/foto'))
+      ..fields['id_vecino'] = idVecino
+      ..files.add(http.MultipartFile.fromBytes(
+        'archivo',
+        bytes,
+        filename: nombreArchivo,
+        contentType: MediaType.parse(tipoMime),
+      ));
+    final enviado = await request.send().timeout(_esperaArchivo);
+    final resp = await http.Response.fromStream(enviado);
+    if (resp.statusCode != 200) throw _error(resp);
+    return _cuerpo(resp)['alerta_id'] as int? ?? 0;
   }
 }

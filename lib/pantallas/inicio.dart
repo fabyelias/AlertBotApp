@@ -3,6 +3,7 @@ import '../api.dart';
 import '../sesion.dart';
 import '../tema.dart';
 import 'emergencias.dart';
+import 'foto.dart';
 import 'mi_direccion.dart';
 import 'mi_familia.dart';
 import 'rondas.dart';
@@ -142,6 +143,10 @@ class _PantallaInicioState extends State<PantallaInicio> {
     Navigator.push(context, MaterialPageRoute(builder: (_) => const PantallaEmergencias()));
   }
 
+  void _abrirFoto() {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const PantallaFoto()));
+  }
+
   void _abrirRondas() {
     Navigator.push(context, MaterialPageRoute(builder: (_) => const PantallaRondas()));
   }
@@ -215,8 +220,8 @@ class _PantallaInicioState extends State<PantallaInicio> {
                         _TarjetaAccion(
                           icono: Icons.photo_camera_rounded,
                           titulo: 'Foto / clip',
-                          subtitulo: 'Próximamente',
-                          onTap: () => _mostrarProximamente('Foto / clip'),
+                          subtitulo: 'Compartir con vecinos',
+                          onTap: _abrirFoto,
                         ),
                         if (_perfil?.esTitular ?? true) ...[
                           _TarjetaAccion(
