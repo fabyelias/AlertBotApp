@@ -63,6 +63,17 @@ aprobando vecinos desde Telegram exactamente como hasta ahora.
      estaba abierta) muestra directo el aviso. Antes de esto, tocar una
      notificación de Pánico/Rondas abría la app sin mostrar nada de lo
      que pasó.
+   - **Ver la alerta aunque no toques la notificación**
+     (`lib/ultima_alerta.dart` + el aviso arriba del botón de Pánico en
+     `inicio.dart`): `main.dart` registra
+     `FirebaseMessaging.onBackgroundMessage`, que corre en un isolate
+     aparte incluso con la app cerrada, y guarda ahí mismo la última
+     alerta que llegó (se haya tocado la notificación o no). Al abrir la
+     app por cualquier lado — ícono, volver de otra app, no solo tocando
+     la notificación — Inicio la lee y la muestra en una tarjeta con
+     "Ver"/"Descartar", hasta que el vecino la vea. Sin esto, un vecino
+     que no llegaba a tocar la notificación a tiempo (se le pasó, el
+     celular estaba bloqueado) no se enteraba de nada al entrar después.
    - **Reportar contenido** (botón "Reportar" en `ver_foto.dart`):
      manda el motivo (obsceno, spam, no corresponde, u otro a mano) a
      `POST /api/foto/{alerta_id}/reportar`, que se lo reenvía al
@@ -176,6 +187,7 @@ lib/
   tema.dart               — colores y estilo visual
   api.dart                 — cliente HTTP contra el backend
   sesion.dart              — guarda el id_vecino (token) en el celular
+  ultima_alerta.dart       — guarda la última alerta en el celular, la haya tocado o no
   bienvenida.dart          — pantalla de inicio/splash
   comando_voz_servicio.dart — motor del comando de voz (Picovoice Porcupine + servicio en primer plano)
                               — en pausa, no enlazado desde el menú (ver pendiente #2)

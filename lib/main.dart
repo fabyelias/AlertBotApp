@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'tema.dart';
+import 'ultima_alerta.dart';
 import 'pantallas/arranque.dart';
 import 'pantallas/ver_alerta.dart';
 import 'pantallas/ver_foto.dart';
@@ -10,9 +11,35 @@ import 'pantallas/ver_foto.dart';
 /// fuera del árbol de widgets (no tienen su propio BuildContext).
 final navigatorKey = GlobalKey<NavigatorState>();
 
+/// Corre en un isolate aparte, incluso con la app cerrada del todo — por
+/// eso necesita su propio Firebase.initializeApp() y no puede tocar nada
+/// del árbol de widgets (ni navigatorKey). Solo guarda la alerta
+/// localmente, para que la vea apenas abra la app por cualquier lado, no
+/// solo si toca la notificación.
+@pragma('vm:entry-point')
+Future<void> _manejarMensajeEnSegundoPlano(RemoteMessage mensaje) async {
+  await Firebase.initializeApp();
+  await _guardarSiEsAlerta(mensaje);
+}
+
+Future<void> _guardarSiEsAlerta(RemoteMessage mensaje) async {
+  final tipo = mensaje.data['tipo'];
+  if (tipo == null) return;
+  await UltimaAlerta.guardar(
+    tipo: tipo,
+    titulo: mensaje.data['titulo'],
+    cuerpo: mensaje.data['cuerpo'],
+    alertaId: int.tryParse(mensaje.data['alerta_id'] ?? ''),
+  );
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
+  // Con la app en segundo plano o cerrada del todo: guarda la alerta
+  // apenas llega, la haya tocado o no.
+  FirebaseMessaging.onBackgroundMessage(_manejarMensajeEnSegundoPlano);
 
   // Tocaron una notificación y la app estaba en segundo plano.
   FirebaseMessaging.onMessageOpenedApp.listen(_abrirDesdeNotificacion);
@@ -26,8 +53,10 @@ void main() async {
   if (mensajeInicial != null) _abrirDesdeNotificacion(mensajeInicial);
 
   // La app estaba abierta cuando llegó: Android no muestra sola una
-  // notificación de sistema en este caso, así que avisamos nosotros.
-  FirebaseMessaging.onMessage.listen((mensaje) {
+  // notificación de sistema en este caso, así que avisamos nosotros (y
+  // igual la guardamos, por si el vecino ignora el aviso).
+  FirebaseMessaging.onMessage.listen((mensaje) async {
+    await _guardarSiEsAlerta(mensaje);
     final tipo = mensaje.data['tipo'];
     if (tipo == null) return;
     final context = navigatorKey.currentContext;
@@ -52,11 +81,15 @@ String _avisoCorto(String tipo, String? titulo) {
   }
 }
 
+/// Al tocar la notificación (o el botón "Ver" del aviso en primer plano),
+/// abre la pantalla del aviso Y limpia lo guardado — ya lo vio, no hace
+/// falta que le siga apareciendo en Inicio.
 void _abrirDesdeNotificacion(RemoteMessage mensaje) {
   final tipo = mensaje.data['tipo'];
   if (tipo == 'foto') {
     final alertaId = int.tryParse(mensaje.data['alerta_id'] ?? '');
     if (alertaId == null) return;
+    UltimaAlerta.borrar();
     navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => PantallaVerFoto(alertaId: alertaId)));
     return;
   }
@@ -64,6 +97,7 @@ void _abrirDesdeNotificacion(RemoteMessage mensaje) {
     final titulo = mensaje.data['titulo'];
     final cuerpo = mensaje.data['cuerpo'];
     if (titulo == null || cuerpo == null) return;
+    UltimaAlerta.borrar();
     navigatorKey.currentState?.push(MaterialPageRoute(
       builder: (_) => PantallaVerAlerta(tipo: tipo!, titulo: titulo, cuerpo: cuerpo),
     ));

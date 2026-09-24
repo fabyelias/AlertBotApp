@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import '../api.dart';
 import '../sesion.dart';
 import '../tema.dart';
+import '../ultima_alerta.dart';
 import 'emergencias.dart';
 import 'foto.dart';
 import 'mi_direccion.dart';
 import 'mi_familia.dart';
 import 'rondas.dart';
+import 'ver_alerta.dart';
+import 'ver_foto.dart';
 
 /// Categorías de pánico: la clave es la que entiende el backend
 /// (ver CATEGORIAS_PANICO en config.py del bot), el texto es lo que ve
@@ -25,14 +28,61 @@ class PantallaInicio extends StatefulWidget {
   State<PantallaInicio> createState() => _PantallaInicioState();
 }
 
-class _PantallaInicioState extends State<PantallaInicio> {
+class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObserver {
   bool _activando = false;
   PerfilVecino? _perfil;
+  Map<String, dynamic>? _alertaPendiente;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _cargarPerfil();
+    _cargarAlertaPendiente();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Volvió del segundo plano (task switcher, desbloqueó el celular):
+    // por si llegó una alerta mientras tanto, sin que abriera la app de
+    // nuevo desde cero (eso ya lo cubre initState).
+    if (state == AppLifecycleState.resumed) _cargarAlertaPendiente();
+  }
+
+  Future<void> _cargarAlertaPendiente() async {
+    final alerta = await UltimaAlerta.leer();
+    if (mounted) setState(() => _alertaPendiente = alerta);
+  }
+
+  Future<void> _descartarAlertaPendiente() async {
+    await UltimaAlerta.borrar();
+    if (mounted) setState(() => _alertaPendiente = null);
+  }
+
+  Future<void> _abrirAlertaPendiente() async {
+    final alerta = _alertaPendiente;
+    if (alerta == null) return;
+    await UltimaAlerta.borrar();
+    if (!mounted) return;
+    setState(() => _alertaPendiente = null);
+    if (alerta['tipo'] == 'foto') {
+      final alertaId = alerta['alertaId'] as int?;
+      if (alertaId == null) return;
+      Navigator.push(context, MaterialPageRoute(builder: (_) => PantallaVerFoto(alertaId: alertaId)));
+      return;
+    }
+    final titulo = alerta['titulo'] as String?;
+    final cuerpo = alerta['cuerpo'] as String?;
+    if (titulo == null || cuerpo == null) return;
+    Navigator.push(context, MaterialPageRoute(
+      builder: (_) => PantallaVerAlerta(tipo: alerta['tipo'] as String, titulo: titulo, cuerpo: cuerpo),
+    ));
   }
 
   Future<void> _cargarPerfil() async {
@@ -177,6 +227,14 @@ class _PantallaInicioState extends State<PantallaInicio> {
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
                 child: Column(
                   children: [
+                    if (_alertaPendiente != null) ...[
+                      _AvisoAlertaPendiente(
+                        alerta: _alertaPendiente!,
+                        onVer: _abrirAlertaPendiente,
+                        onDescartar: _descartarAlertaPendiente,
+                      ),
+                      const SizedBox(height: 20),
+                    ],
                     _BotonPanico(activando: _activando, onTap: _mostrarCategorias),
                     const SizedBox(height: 14),
                     Text(
@@ -406,6 +464,69 @@ class _TarjetaAccion extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Aviso de "tenés una alerta sin ver" arriba del botón de Pánico — para
+/// cuando el vecino abre la app sin haber tocado la notificación (la
+/// descartó, no la vio, el celular estaba bloqueado). Se llena con lo
+/// que ya guardó UltimaAlerta al llegar el push, sin pedirle nada al
+/// backend.
+class _AvisoAlertaPendiente extends StatelessWidget {
+  final Map<String, dynamic> alerta;
+  final VoidCallback onVer;
+  final VoidCallback onDescartar;
+
+  const _AvisoAlertaPendiente({required this.alerta, required this.onVer, required this.onDescartar});
+
+  @override
+  Widget build(BuildContext context) {
+    final tipo = alerta['tipo'] as String? ?? 'alerta';
+    final esPanico = tipo == 'panico';
+    final esFoto = tipo == 'foto';
+    final color = esPanico ? AlertBotColores.rojoPanico : AlertBotColores.verdePrincipal;
+    final icono = esFoto
+        ? Icons.photo_camera_rounded
+        : (esPanico ? Icons.sos_rounded : Icons.directions_walk_rounded);
+    final titulo = esFoto
+        ? 'Alguien compartió algo cerca tuyo'
+        : (alerta['titulo'] as String? ?? 'Tenés una alerta sin ver');
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(radioTarjeta),
+        border: Border.all(color: color.withOpacity(0.4), width: 1.5),
+        boxShadow: sombraTarjeta(color: color),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icono, color: color, size: 26),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(titulo, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    TextButton(onPressed: onVer, child: const Text('Ver')),
+                    TextButton(
+                      onPressed: onDescartar,
+                      style: TextButton.styleFrom(foregroundColor: AlertBotColores.textoSuave),
+                      child: const Text('Descartar'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
