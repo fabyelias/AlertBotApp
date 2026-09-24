@@ -2,7 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'tema.dart';
-import 'ultima_alerta.dart';
+import 'notificaciones.dart';
 import 'pantallas/arranque.dart';
 import 'pantallas/ver_alerta.dart';
 import 'pantallas/ver_foto.dart';
@@ -25,7 +25,7 @@ Future<void> _manejarMensajeEnSegundoPlano(RemoteMessage mensaje) async {
 Future<void> _guardarSiEsAlerta(RemoteMessage mensaje) async {
   final tipo = mensaje.data['tipo'];
   if (tipo == null) return;
-  await UltimaAlerta.guardar(
+  await Notificaciones.agregar(
     tipo: tipo,
     titulo: mensaje.data['titulo'],
     cuerpo: mensaje.data['cuerpo'],
@@ -82,14 +82,15 @@ String _avisoCorto(String tipo, String? titulo) {
 }
 
 /// Al tocar la notificación (o el botón "Ver" del aviso en primer plano),
-/// abre la pantalla del aviso Y limpia lo guardado — ya lo vio, no hace
-/// falta que le siga apareciendo en Inicio.
+/// abre la pantalla del aviso Y marca todo como visto — sigue en el
+/// historial de la campanita, pero ya no hace falta que le siga
+/// apareciendo el aviso arriba del botón de Pánico en Inicio.
 void _abrirDesdeNotificacion(RemoteMessage mensaje) {
   final tipo = mensaje.data['tipo'];
   if (tipo == 'foto') {
     final alertaId = int.tryParse(mensaje.data['alerta_id'] ?? '');
     if (alertaId == null) return;
-    UltimaAlerta.borrar();
+    Notificaciones.marcarTodasVistas();
     navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => PantallaVerFoto(alertaId: alertaId)));
     return;
   }
@@ -97,7 +98,7 @@ void _abrirDesdeNotificacion(RemoteMessage mensaje) {
     final titulo = mensaje.data['titulo'];
     final cuerpo = mensaje.data['cuerpo'];
     if (titulo == null || cuerpo == null) return;
-    UltimaAlerta.borrar();
+    Notificaciones.marcarTodasVistas();
     navigatorKey.currentState?.push(MaterialPageRoute(
       builder: (_) => PantallaVerAlerta(tipo: tipo!, titulo: titulo, cuerpo: cuerpo),
     ));

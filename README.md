@@ -63,17 +63,24 @@ aprobando vecinos desde Telegram exactamente como hasta ahora.
      estaba abierta) muestra directo el aviso. Antes de esto, tocar una
      notificación de Pánico/Rondas abría la app sin mostrar nada de lo
      que pasó.
-   - **Ver la alerta aunque no toques la notificación**
-     (`lib/ultima_alerta.dart` + el aviso arriba del botón de Pánico en
-     `inicio.dart`): `main.dart` registra
+   - **Ver la alerta aunque no toques la notificación, y campanita con
+     historial** (`lib/notificaciones.dart` + el aviso arriba del botón
+     de Pánico y la campanita en `inicio.dart` + `lib/pantallas/
+     notificaciones.dart`): `main.dart` registra
      `FirebaseMessaging.onBackgroundMessage`, que corre en un isolate
-     aparte incluso con la app cerrada, y guarda ahí mismo la última
-     alerta que llegó (se haya tocado la notificación o no). Al abrir la
-     app por cualquier lado — ícono, volver de otra app, no solo tocando
-     la notificación — Inicio la lee y la muestra en una tarjeta con
-     "Ver"/"Descartar", hasta que el vecino la vea. Sin esto, un vecino
-     que no llegaba a tocar la notificación a tiempo (se le pasó, el
-     celular estaba bloqueado) no se enteraba de nada al entrar después.
+     aparte incluso con la app cerrada, y va guardando ahí mismo cada
+     alerta que llega (se haya tocado la notificación o no), en una
+     lista de hasta 30 en `SharedPreferences` — no se pisan entre sí.
+     Al abrir la app por cualquier lado — ícono, volver de otra app, no
+     solo tocando la notificación — Inicio lee la más nueva sin ver y la
+     muestra en una tarjeta con "Ver"/"Descartar", hasta que el vecino
+     la vea. Sin esto, un vecino que no llegaba a tocar la notificación a
+     tiempo (se le pasó, el celular estaba bloqueado) no se enteraba de
+     nada al entrar después. La campanita del encabezado (antes decía
+     "todavía no está lista") ahora abre `PantallaNotificaciones`, con
+     el historial completo — pánico, rondas y foto/clip, más recientes
+     primero, con un punto de color en las que todavía no se vieron; al
+     abrirla se marcan todas como vistas.
    - **Reportar contenido** (botón "Reportar" en `ver_foto.dart`):
      manda el motivo (obsceno, spam, no corresponde, u otro a mano) a
      `POST /api/foto/{alerta_id}/reportar`, que se lo reenvía al
@@ -187,7 +194,7 @@ lib/
   tema.dart               — colores y estilo visual
   api.dart                 — cliente HTTP contra el backend
   sesion.dart              — guarda el id_vecino (token) en el celular
-  ultima_alerta.dart       — guarda la última alerta en el celular, la haya tocado o no
+  notificaciones.dart      — historial de alertas en el celular (hasta 30, la más nueva sin ver primero)
   bienvenida.dart          — pantalla de inicio/splash
   comando_voz_servicio.dart — motor del comando de voz (Picovoice Porcupine + servicio en primer plano)
                               — en pausa, no enlazado desde el menú (ver pendiente #2)
@@ -203,6 +210,7 @@ lib/
     foto.dart                — sacar/grabar/elegir y mandar una foto o video
     ver_foto.dart             — ver lo que compartió otro vecino (llega por push) y reportarlo
     ver_alerta.dart           — ver el aviso de una alerta de Pánico o Rondas (llega por push)
+    notificaciones.dart       — historial completo, abre desde la campanita en Inicio
     comando_voz.dart        — pantalla del comando de voz — en pausa, no enlazado desde el menú
 assets/
   wakewords/               — archivos de Picovoice del comando de voz (ver LEEME.md ahí)

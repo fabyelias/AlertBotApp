@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import '../api.dart';
 import '../sesion.dart';
 import '../tema.dart';
-import '../ultima_alerta.dart';
+import '../notificaciones.dart';
 import 'emergencias.dart';
 import 'foto.dart';
 import 'mi_direccion.dart';
 import 'mi_familia.dart';
+import 'notificaciones.dart';
 import 'rondas.dart';
 import 'ver_alerta.dart';
 import 'ver_foto.dart';
@@ -31,7 +32,7 @@ class PantallaInicio extends StatefulWidget {
 class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObserver {
   bool _activando = false;
   PerfilVecino? _perfil;
-  Map<String, dynamic>? _alertaPendiente;
+  NotificacionGuardada? _alertaPendiente;
 
   @override
   void initState() {
@@ -56,33 +57,41 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
   }
 
   Future<void> _cargarAlertaPendiente() async {
-    final alerta = await UltimaAlerta.leer();
+    final alerta = await Notificaciones.pendiente();
     if (mounted) setState(() => _alertaPendiente = alerta);
   }
 
   Future<void> _descartarAlertaPendiente() async {
-    await UltimaAlerta.borrar();
+    final alerta = _alertaPendiente;
+    if (alerta == null) return;
+    await Notificaciones.marcarVista(alerta);
     if (mounted) setState(() => _alertaPendiente = null);
   }
 
   Future<void> _abrirAlertaPendiente() async {
     final alerta = _alertaPendiente;
     if (alerta == null) return;
-    await UltimaAlerta.borrar();
+    await Notificaciones.marcarVista(alerta);
     if (!mounted) return;
     setState(() => _alertaPendiente = null);
-    if (alerta['tipo'] == 'foto') {
-      final alertaId = alerta['alertaId'] as int?;
+    if (alerta.tipo == 'foto') {
+      final alertaId = alerta.alertaId;
       if (alertaId == null) return;
       Navigator.push(context, MaterialPageRoute(builder: (_) => PantallaVerFoto(alertaId: alertaId)));
       return;
     }
-    final titulo = alerta['titulo'] as String?;
-    final cuerpo = alerta['cuerpo'] as String?;
+    final titulo = alerta.titulo;
+    final cuerpo = alerta.cuerpo;
     if (titulo == null || cuerpo == null) return;
     Navigator.push(context, MaterialPageRoute(
-      builder: (_) => PantallaVerAlerta(tipo: alerta['tipo'] as String, titulo: titulo, cuerpo: cuerpo),
+      builder: (_) => PantallaVerAlerta(tipo: alerta.tipo, titulo: titulo, cuerpo: cuerpo),
     ));
+  }
+
+  Future<void> _abrirNotificaciones() async {
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => const PantallaNotificaciones()));
+    // Al volver, ya se marcaron todas como vistas — refresca el aviso.
+    _cargarAlertaPendiente();
   }
 
   Future<void> _cargarPerfil() async {
@@ -183,12 +192,6 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
     ));
   }
 
-  void _mostrarProximamente(String funcion) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('$funcion todavía no está lista. ¡Ya la estamos preparando! 🚧'),
-    ));
-  }
-
   void _abrirEmergencias() {
     Navigator.push(context, MaterialPageRoute(builder: (_) => const PantallaEmergencias()));
   }
@@ -221,7 +224,7 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
         bottom: false,
         child: Column(
           children: [
-            _Encabezado(onTocarNotificacion: () => _mostrarProximamente('Las notificaciones'), nombre: _perfil?.nombre),
+            _Encabezado(onTocarNotificacion: _abrirNotificaciones, nombre: _perfil?.nombre),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
@@ -472,10 +475,10 @@ class _TarjetaAccion extends StatelessWidget {
 /// Aviso de "tenés una alerta sin ver" arriba del botón de Pánico — para
 /// cuando el vecino abre la app sin haber tocado la notificación (la
 /// descartó, no la vio, el celular estaba bloqueado). Se llena con lo
-/// que ya guardó UltimaAlerta al llegar el push, sin pedirle nada al
+/// que ya guardó Notificaciones al llegar el push, sin pedirle nada al
 /// backend.
 class _AvisoAlertaPendiente extends StatelessWidget {
-  final Map<String, dynamic> alerta;
+  final NotificacionGuardada alerta;
   final VoidCallback onVer;
   final VoidCallback onDescartar;
 
@@ -483,16 +486,14 @@ class _AvisoAlertaPendiente extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tipo = alerta['tipo'] as String? ?? 'alerta';
+    final tipo = alerta.tipo;
     final esPanico = tipo == 'panico';
     final esFoto = tipo == 'foto';
     final color = esPanico ? AlertBotColores.rojoPanico : AlertBotColores.verdePrincipal;
     final icono = esFoto
         ? Icons.photo_camera_rounded
         : (esPanico ? Icons.sos_rounded : Icons.directions_walk_rounded);
-    final titulo = esFoto
-        ? 'Alguien compartió algo cerca tuyo'
-        : (alerta['titulo'] as String? ?? 'Tenés una alerta sin ver');
+    final titulo = esFoto ? 'Alguien compartió algo cerca tuyo' : (alerta.titulo ?? 'Tenés una alerta sin ver');
 
     return Container(
       padding: const EdgeInsets.all(16),
