@@ -55,7 +55,15 @@ aprobando vecinos desde Telegram exactamente como hasta ahora.
      dentro de la app** (evitamos sumar `video_player`/`chewie` por
      ahora, para no arriesgar el build como pasó con el comando de voz)
      — se avisa igual que se compartió uno, y se puede reportar.
-   - **Reportar contenido** (botón "Reportar" en esa misma pantalla):
+   - **Ver el aviso de una alerta de Pánico o Rondas**
+     (`lib/pantallas/ver_alerta.dart`): a diferencia de Foto/clip, acá el
+     título y el cuerpo ya vienen completos en el push (`tipo_push` en
+     `_difundir_a_vecinos`, del lado del bot), así que no hace falta
+     pedirle nada al backend — tocar la notificación (o "Ver" si la app
+     estaba abierta) muestra directo el aviso. Antes de esto, tocar una
+     notificación de Pánico/Rondas abría la app sin mostrar nada de lo
+     que pasó.
+   - **Reportar contenido** (botón "Reportar" en `ver_foto.dart`):
      manda el motivo (obsceno, spam, no corresponde, u otro a mano) a
      `POST /api/foto/{alerta_id}/reportar`, que se lo reenvía al
      administrador por Telegram junto con la foto/video para que decida
@@ -182,6 +190,7 @@ lib/
     mi_direccion.dart        — actualizar dirección (solo titular)
     foto.dart                — sacar/grabar/elegir y mandar una foto o video
     ver_foto.dart             — ver lo que compartió otro vecino (llega por push) y reportarlo
+    ver_alerta.dart           — ver el aviso de una alerta de Pánico o Rondas (llega por push)
     comando_voz.dart        — pantalla del comando de voz — en pausa, no enlazado desde el menú
 assets/
   wakewords/               — archivos de Picovoice del comando de voz (ver LEEME.md ahí)
