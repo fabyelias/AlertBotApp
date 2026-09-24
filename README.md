@@ -13,6 +13,17 @@ aprobando vecinos desde Telegram exactamente como hasta ahora.
    degradé de marca y saludo por nombre, tarjetas con sombra suave, botón
    de Pánico con halo, y feedback real al tocar cualquier botón — nada
    queda "muerto".
+✅ **Paleta calcada del chat de Telegram del bot.** Se midieron los
+   colores reales (muestreo de píxeles) sobre capturas del video de
+   referencia: verde salvia del fondo del chat (`verdeGradiente`), verde
+   menta de las burbujas/botones resaltados (`verdeMenta`), y el verde
+   oscuro de acentos y texto (`verdePrincipal`/`verdeOscuro`) — todo
+   centralizado en `AlertBotColores`, así que cambia en toda la app de
+   una vez. Las pantallas siguen siendo nativas (botones, listas,
+   formularios), no una imitación de chat — eso se charló antes de
+   tocar nada. Tipografía: se mantiene Roboto (la fuente nativa de
+   Android, ya muy parecida a la del video, que es un iPhone) en vez de
+   importar una fuente nueva.
 ✅ **Menú real del bot, no solo Pánico.** Se grabó un video usando el bot
    de Telegram (teclado persistente con 11 botones) y se replicaron en la
    app las funciones que tiene sentido que use un vecino común:

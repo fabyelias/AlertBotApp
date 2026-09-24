@@ -374,9 +374,9 @@ class _TarjetaAccion extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AlertBotColores.verdeMenta,
         borderRadius: BorderRadius.circular(radioTarjeta),
-        boxShadow: sombraTarjeta(),
+        boxShadow: sombraTarjeta(color: AlertBotColores.verdeOscuro),
       ),
       child: Material(
         color: Colors.transparent,
@@ -391,7 +391,7 @@ class _TarjetaAccion extends StatelessWidget {
               children: [
                 Container(
                   padding: const EdgeInsets.all(14),
-                  decoration: const BoxDecoration(color: AlertBotColores.verdeClaro, shape: BoxShape.circle),
+                  decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
                   child: Icon(icono, color: AlertBotColores.verdePrincipal, size: 28),
                 ),
                 const SizedBox(height: 10),

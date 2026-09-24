@@ -1,26 +1,28 @@
 import 'package:flutter/material.dart';
 
-/// Paleta de AlertBot: verde barrial + blanco, el mismo espíritu del bot
-/// de Telegram (escudo, casita, seguridad de cercanía) y del ícono real
-/// de la app (assets/icono/).
+/// Paleta de AlertBot, calcada de los colores reales del chat de Telegram
+/// del bot (medidos con un muestreo de píxeles sobre capturas del video de
+/// referencia): el verde salvia del fondo del chat, el verde menta de las
+/// burbujas/botones, y el verde oscuro de los acentos y el texto.
 class AlertBotColores {
-  static const verdePrincipal = Color(0xFF1E7A46);
-  static const verdeOscuro = Color(0xFF0F4C2C);
-  static const verdeClaro = Color(0xFFE8F5EC);
-  static const verdeGradiente = Color(0xFF4FA868); // el brillo del ícono
+  static const verdePrincipal = Color(0xFF4F7A5C); // acento oscuro: AppBar, botones, texto de marca
+  static const verdeOscuro = Color(0xFF35543F); // variante más oscura (snackbar, texto fuerte)
+  static const verdeClaro = Color(0xFFE3F0DC); // fondo pálido detrás de íconos
+  static const verdeMenta = Color(0xFFDCF0C7); // burbuja/botón resaltado (como el "Hola" saliente del chat)
+  static const verdeGradiente = Color(0xFF9AC58C); // verde salvia del wallpaper del chat
   static const rojoPanico = Color(0xFFD32F2F);
   static const rojoPanicoClaro = Color(0xFFFCE9E9);
-  static const fondo = Color(0xFFF7FAF8);
-  static const textoSuave = Color(0xFF5B6B62);
-  static const borde = Color(0xFFDCE6DF);
+  static const fondo = Color(0xFFF1F7EC); // fondo de pantalla, versión clara del wallpaper
+  static const textoSuave = Color(0xFF5B6B5E);
+  static const borde = Color(0xFFD3E3C8);
 }
 
-/// El mismo degradé del ícono (assets/icono/), para el encabezado de
+/// El mismo degradé suave del wallpaper del chat, para el encabezado de
 /// Inicio y otros bloques "hero".
 const gradienteAlertBot = LinearGradient(
-  begin: Alignment.topLeft,
-  end: Alignment.bottomRight,
-  colors: [AlertBotColores.verdeGradiente, AlertBotColores.verdeOscuro],
+  begin: Alignment.topCenter,
+  end: Alignment.bottomCenter,
+  colors: [AlertBotColores.verdeGradiente, AlertBotColores.verdePrincipal],
 );
 
 const radioTarjeta = 20.0;
