@@ -198,15 +198,24 @@ class AlertBotApi {
   /// que nadie puede tocar el token de otro. Sirve tanto si el registro
   /// original no consiguió uno (Google Play Services no listo, sin
   /// internet, permiso aceptado tarde) como si Firebase lo rotó después.
+  /// canalSonido va siempre (aunque sea null = "sonido por defecto"),
+  /// para que el backend pueda distinguir "no tocar" (la clave ni
+  /// aparece, apps viejas que no mandan este campo) de "volver al
+  /// sonido por defecto" (la clave viene, en null).
   static Future<void> actualizarTokenPush({
     required String idVecino,
     required String tokenPush,
+    required String? canalSonido,
   }) async {
     final resp = await http
         .post(
           Uri.parse('$baseUrl/api/token-push'),
           headers: _headersJson,
-          body: jsonEncode({'id_vecino': idVecino, 'token_push': tokenPush}),
+          body: jsonEncode({
+            'id_vecino': idVecino,
+            'token_push': tokenPush,
+            'canal_sonido': canalSonido,
+          }),
         )
         .timeout(_espera);
     if (resp.statusCode != 200) throw _error(resp);

@@ -9,6 +9,7 @@ import 'mi_direccion.dart';
 import 'mi_familia.dart';
 import 'notificaciones.dart';
 import 'rondas.dart';
+import 'sonido_alerta.dart';
 import 'ver_alerta.dart';
 import 'ver_foto.dart';
 
@@ -111,26 +112,33 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
 
     final clave = await showModalBottomSheet<String>(
       context: context,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (_) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                alignment: Alignment.center,
-                decoration: BoxDecoration(color: AlertBotColores.borde, borderRadius: BorderRadius.circular(4)),
-              ),
-              const Text('¿Qué está pasando?',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AlertBotColores.verdeOscuro)),
-              const SizedBox(height: 16),
-              for (final entrada in _categoriasPanico.entries) _opcionCategoria(entrada.key, entrada.value),
-            ],
+      // isScrollControlled más este scroll: sin esto la hoja se recorta a
+      // una altura fija y, con varias categorías, el contenido no entra
+      // y desborda por abajo (se veía "BOTTOM OVERFLOWED").
+      builder: (context) => SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(color: AlertBotColores.borde, borderRadius: BorderRadius.circular(4)),
+                ),
+                const Text('¿Qué está pasando?',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AlertBotColores.verdeOscuro)),
+                const SizedBox(height: 16),
+                for (final entrada in _categoriasPanico.entries) _opcionCategoria(entrada.key, entrada.value),
+              ],
+            ),
           ),
         ),
       ),
@@ -208,6 +216,10 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
     Navigator.push(context, MaterialPageRoute(builder: (_) => const PantallaMiFamilia()));
   }
 
+  void _abrirSonidoAlerta() {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const PantallaSonidoAlerta()));
+  }
+
   Future<void> _abrirMiDireccion() async {
     final actualizada = await Navigator.push<bool>(
       context,
@@ -283,6 +295,12 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
                           titulo: 'Foto / clip',
                           subtitulo: 'Compartir con vecinos',
                           onTap: _abrirFoto,
+                        ),
+                        _TarjetaAccion(
+                          icono: Icons.campaign_rounded,
+                          titulo: 'Sonido de alertas',
+                          subtitulo: 'Elegir la sirena',
+                          onTap: _abrirSonidoAlerta,
                         ),
                         if (_perfil?.esTitular ?? true) ...[
                           _TarjetaAccion(

@@ -3,6 +3,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import '../api.dart';
 import '../sesion.dart';
+import '../sonido_alerta.dart';
 import '../tema.dart';
 import '../bienvenida.dart';
 import 'esperando_aprobacion.dart';
@@ -63,7 +64,8 @@ class _PantallaArranqueState extends State<PantallaArranque> {
     try {
       final token = await FirebaseMessaging.instance.getToken();
       if (token == null) return;
-      await AlertBotApi.actualizarTokenPush(idVecino: idVecino, tokenPush: token);
+      final canalSonido = await PreferenciaSonido.leer();
+      await AlertBotApi.actualizarTokenPush(idVecino: idVecino, tokenPush: token, canalSonido: canalSonido);
     } catch (_) {
       // sin conexión puntual, o todavía sin permiso: no pasa nada, se
       // reintenta solo la próxima vez que se abra la app

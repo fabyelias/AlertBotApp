@@ -86,6 +86,25 @@ aprobando vecinos desde Telegram exactamente como hasta ahora.
      `POST /api/foto/{alerta_id}/reportar`, que se lo reenvía al
      administrador por Telegram junto con la foto/video para que decida
      si corresponde dar de baja a quien la subió.
+   - **Sonido de alertas con sirenas** (`lib/pantallas/sonido_alerta.dart`,
+     `lib/sonido_alerta.dart`, `lib/notificaciones_locales.dart`): una
+     tarjeta más en "Acciones rápidas" para elegir con qué sonido avisa
+     AlertBot — sirena clásica, corta (yelp) o dos tonos, sintetizadas
+     con Python puro (sin descargar ningún audio de terceros) y
+     empaquetadas como recursos de Android en `android/app/src/main/res/
+     raw/`. Usa `flutter_local_notifications` para armar un canal de
+     notificación por sirena (`AndroidNotificationChannel` con
+     `RawResourceAndroidNotificationSound`) y para mostrar la vista
+     previa al tocar 🔊. La elección se guarda local y se manda al
+     backend en `canal_sonido` (mismo `POST /api/token-push` que ya
+     mandaba el token, en cada apertura y también al instante al
+     cambiarla) — el bot arma el push con ese canal
+     (`AndroidConfig.notification.channel_id` en `push.py`), así que
+     Android usa la sirena elegida incluso con la app cerrada o en
+     segundo plano, sin que el servidor tenga que mandar ningún archivo
+     de audio. Con la app abierta, como Android no muestra sola una
+     notificación de sistema, se muestra una notificación local propia
+     con el mismo canal — así la sirena suena en cualquier caso.
 
    Quedan **a propósito** fuera de la app: 📋 Historial, ⚙️ Vecinos, 🩺
    Estado del bot, 🔔 Probar sirena y 🗂️ Categorías de voz son
@@ -195,6 +214,8 @@ lib/
   api.dart                 — cliente HTTP contra el backend
   sesion.dart              — guarda el id_vecino (token) en el celular
   notificaciones.dart      — historial de alertas en el celular (hasta 30, la más nueva sin ver primero)
+  sonido_alerta.dart       — sonidos de sirena disponibles + preferencia guardada
+  notificaciones_locales.dart — canales de Android por sirena + mostrar notificación local
   bienvenida.dart          — pantalla de inicio/splash
   comando_voz_servicio.dart — motor del comando de voz (Picovoice Porcupine + servicio en primer plano)
                               — en pausa, no enlazado desde el menú (ver pendiente #2)
@@ -211,9 +232,13 @@ lib/
     ver_foto.dart             — ver lo que compartió otro vecino (llega por push) y reportarlo
     ver_alerta.dart           — ver el aviso de una alerta de Pánico o Rondas (llega por push)
     notificaciones.dart       — historial completo, abre desde la campanita en Inicio
+    sonido_alerta.dart        — elegir sirena, con vista previa tocable
     comando_voz.dart        — pantalla del comando de voz — en pausa, no enlazado desde el menú
 assets/
   wakewords/               — archivos de Picovoice del comando de voz (ver LEEME.md ahí)
   icono/                    — ícono y logo del splash (escudo verde/blanco), usados por
                               flutter_launcher_icons y flutter_native_splash (ver pubspec.yaml)
+android/app/src/main/res/raw/
+  alertbot_sirena_clasica.wav, alertbot_sirena_corta.wav, alertbot_sirena_dostonos.wav
+                            — sirenas sintetizadas (ver notificaciones_locales.dart)
 ```

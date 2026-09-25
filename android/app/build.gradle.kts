@@ -26,7 +26,10 @@ android {
         applicationId = "com.example.alertbot_app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // Fijo en 24 (Android 7.0): flutter_local_notifications (sonidos de
+        // alerta) pide esa mínima desde su v21 — bien por debajo de
+        // cualquier celular real que use el barrio.
+        minSdk = maxOf(flutter.minSdkVersion, 24)
         targetSdk = 36 // ídem compileSdk, ver comentario arriba
         // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
         // is added automatically by Flutter. (https://developer.android.com/studio/build/configure-apk-splits#configure-APK-versions)

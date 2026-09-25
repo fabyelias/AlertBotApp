@@ -75,6 +75,7 @@ class _PantallaRondasState extends State<PantallaRondas> {
   Future<void> _abrirCierreDeRonda() async {
     final novedad = await showModalBottomSheet<String>(
       context: context,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (_) => _HojaCierreRonda(),
     );
@@ -207,27 +208,33 @@ class _PantallaRondasState extends State<PantallaRondas> {
 class _HojaCierreRonda extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    // isScrollControlled (en showModalBottomSheet) más este SingleChildScrollView:
+    // sin esto, la hoja se recorta a una altura fija y, con varias opciones,
+    // el contenido no entra y desborda por abajo (se veía "BOTTOM OVERFLOWED").
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              '¿Alguna novedad antes de cerrar la ronda?',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AlertBotColores.verdeOscuro),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Tocá la opción que más se parezca a lo que pasó, o "Sin novedades" si todo estuvo tranquilo.',
-              style: TextStyle(color: AlertBotColores.textoSuave, fontSize: 13),
-            ),
-            const SizedBox(height: 16),
-            _opcion(context, '✅ Sin novedades', ''),
-            for (final entrada in _novedadesPreset.entries) _opcion(context, entrada.value, entrada.value),
-            _opcionEscribir(context),
-          ],
+      child: SingleChildScrollView(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                '¿Alguna novedad antes de cerrar la ronda?',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AlertBotColores.verdeOscuro),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Tocá la opción que más se parezca a lo que pasó, o "Sin novedades" si todo estuvo tranquilo.',
+                style: TextStyle(color: AlertBotColores.textoSuave, fontSize: 13),
+              ),
+              const SizedBox(height: 16),
+              _opcion(context, '✅ Sin novedades', ''),
+              for (final entrada in _novedadesPreset.entries) _opcion(context, entrada.value, entrada.value),
+              _opcionEscribir(context),
+            ],
+          ),
         ),
       ),
     );

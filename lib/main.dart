@@ -3,6 +3,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'tema.dart';
 import 'notificaciones.dart';
+import 'notificaciones_locales.dart';
+import 'sonido_alerta.dart';
 import 'pantallas/arranque.dart';
 import 'pantallas/ver_alerta.dart';
 import 'pantallas/ver_foto.dart';
@@ -37,6 +39,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
+  // Arma los canales de notificación de Android (uno por sirena
+  // disponible) — hace falta que existan antes de que llegue cualquier
+  // push, sea que lo muestre el sistema solo (app en segundo plano) o
+  // que lo mostremos nosotros acá abajo (app en primer plano).
+  await inicializarNotificacionesLocales();
+
   // Con la app en segundo plano o cerrada del todo: guarda la alerta
   // apenas llega, la haya tocado o no.
   FirebaseMessaging.onBackgroundMessage(_manejarMensajeEnSegundoPlano);
@@ -53,12 +61,17 @@ void main() async {
   if (mensajeInicial != null) _abrirDesdeNotificacion(mensajeInicial);
 
   // La app estaba abierta cuando llegó: Android no muestra sola una
-  // notificación de sistema en este caso, así que avisamos nosotros (y
-  // igual la guardamos, por si el vecino ignora el aviso).
+  // notificación de sistema en este caso (y por lo tanto tampoco suena
+  // nada), así que la mostramos nosotros con el sonido elegido, además
+  // de un aviso rápido dentro de la app (y la guardamos, por si el
+  // vecino ignora ambos).
   FirebaseMessaging.onMessage.listen((mensaje) async {
     await _guardarSiEsAlerta(mensaje);
     final tipo = mensaje.data['tipo'];
     if (tipo == null) return;
+    final (titulo, cuerpo) = _tituloYCuerpoLocal(tipo, mensaje);
+    final canalSonido = await PreferenciaSonido.leer();
+    await mostrarNotificacionLocal(titulo: titulo, cuerpo: cuerpo, canal: canalSonido);
     final context = navigatorKey.currentContext;
     if (context == null) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -66,6 +79,21 @@ void main() async {
       action: SnackBarAction(label: 'Ver', onPressed: () => _abrirDesdeNotificacion(mensaje)),
     ));
   });
+}
+
+/// Título y cuerpo para la notificación local que mostramos nosotros
+/// (a diferencia de _avisoCorto, que es un solo texto para el SnackBar).
+(String, String) _tituloYCuerpoLocal(String tipo, RemoteMessage mensaje) {
+  switch (tipo) {
+    case 'foto':
+      return ('📸 Alguien compartió algo cerca tuyo', 'Tocá para verlo.');
+    case 'ronda':
+      return ('🚶 ${mensaje.data['titulo'] ?? 'Novedad de rondas'}', mensaje.data['cuerpo'] ?? 'Tocá para ver el detalle.');
+    case 'panico':
+      return ('🚨 ${mensaje.data['titulo'] ?? 'Alerta del barrio'}', mensaje.data['cuerpo'] ?? 'Tocá para ver el detalle.');
+    default:
+      return (mensaje.data['titulo'] ?? 'AlertBot', mensaje.data['cuerpo'] ?? '');
+  }
 }
 
 String _avisoCorto(String tipo, String? titulo) {

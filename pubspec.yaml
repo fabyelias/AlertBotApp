@@ -19,6 +19,7 @@ dependencies:
   share_plus: ^13.3.0
   image_picker: ^1.2.3
   http_parser: ^4.1.2
+  flutter_local_notifications: ^22.0.0
   # porcupine_flutter, permission_handler y flutter_foreground_task
   # (comando de voz) se sacaron temporalmente: permission_handler_android
   # exige mínimo SDK de Android 37 (todavía en preview), lo que rompe
