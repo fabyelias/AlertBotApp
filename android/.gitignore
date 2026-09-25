@@ -12,3 +12,10 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+
+# Excepción a propósito: app/debug.keystore NO es secreto (mismas
+# credenciales públicas que la debug.keystore que Android genera solo —
+# ver build.gradle.kts) y SÍ conviene versionarlo: así todos los builds
+# de Codemagic firman igual, y las instalaciones se actualizan solas sin
+# tener que desinstalar la app antes de cada prueba.
+!app/debug.keystore

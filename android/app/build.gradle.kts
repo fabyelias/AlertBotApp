@@ -24,6 +24,23 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    signingConfigs {
+        // Fija (debug.keystore, en este mismo directorio) en vez de la que
+        // Gradle arma sola en $HOME/.android/debug.keystore: en una máquina
+        // de build efímera como la de Codemagic, esa carpeta no existe al
+        // empezar, así que se genera una clave AL AZAR en cada build — cada
+        // APK queda firmado distinto, y Android se niega a instalarlo encima
+        // del anterior ("App not installed") a menos que se desinstale la
+        // app entera antes de cada prueba. Con esta clave fija, todos los
+        // builds quedan firmados igual y el instalador actualiza sin drama.
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.alertbot_app"
