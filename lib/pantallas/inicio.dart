@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import '../api.dart';
 import '../sesion.dart';
 import '../tema.dart';
@@ -162,26 +163,47 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
   }
 
   Future<void> _confirmarYActivar(String clave, String texto) async {
-    final confirma = await showDialog<bool>(
+    // "domicilio" | "actual" | null (canceló) — separado del "¿confirmás?"
+    // de antes: si ves por cámara que te están robando la casa estando en
+    // otro lado, querés avisar a los vecinos de TU CASA, no a los de donde
+    // estás parado ahora. Por default se manda con el domicilio (ya
+    // guardado, no depende del GPS ni de tardar en conseguir señal).
+    final origen = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Categoría elegida: $texto'),
         content: const Text(
-          '¿Confirmás la alerta? En cuanto confirmes le avisamos a todos los vecinos de inmediato.',
+          '¿Desde dónde avisamos a los vecinos? Si estás viendo algo pasar en tu '
+          'casa sin estar ahí, elegí "Mi domicilio".',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Confirmar')),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          OutlinedButton(onPressed: () => Navigator.pop(context, 'domicilio'), child: const Text('Mi domicilio')),
+          ElevatedButton(onPressed: () => Navigator.pop(context, 'actual'), child: const Text('Donde estoy')),
         ],
       ),
     );
-    if (confirma != true || !mounted) return;
+    if (origen == null || !mounted) return;
 
     setState(() => _activando = true);
     try {
       final id = await Sesion.leerIdVecino();
       if (id == null) throw const ErrorApi(0, 'No encontramos tu registro en este celular.');
-      await AlertBotApi.activarPanico(idVecino: id, categoria: clave);
+
+      double? lat;
+      double? lon;
+      if (origen == 'actual') {
+        final posicion = await _ubicacionActual();
+        if (posicion == null) {
+          if (!mounted) return;
+          _mostrarMensaje('No pudimos obtener tu ubicación actual. Probá de nuevo o elegí "Mi domicilio".', esError: true);
+          return;
+        }
+        lat = posicion.latitude;
+        lon = posicion.longitude;
+      }
+
+      await AlertBotApi.activarPanico(idVecino: id, categoria: clave, lat: lat, lon: lon);
       if (!mounted) return;
       _mostrarMensaje('Listo, tu alerta ya llegó a los vecinos. Quedate tranquilo 🙏', esError: false);
     } catch (_) {
@@ -189,6 +211,21 @@ class _PantallaInicioState extends State<PantallaInicio> with WidgetsBindingObse
       _mostrarMensaje('No pudimos enviar la alerta. Revisá tu conexión e intentá de nuevo.', esError: true);
     } finally {
       if (mounted) setState(() => _activando = false);
+    }
+  }
+
+  Future<Position?> _ubicacionActual() async {
+    try {
+      var permiso = await Geolocator.checkPermission();
+      if (permiso == LocationPermission.denied) {
+        permiso = await Geolocator.requestPermission();
+      }
+      if (permiso == LocationPermission.deniedForever || permiso == LocationPermission.denied) {
+        return null;
+      }
+      return await Geolocator.getCurrentPosition();
+    } catch (_) {
+      return null;
     }
   }
 

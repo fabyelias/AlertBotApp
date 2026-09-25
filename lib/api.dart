@@ -156,17 +156,27 @@ class AlertBotApi {
   }
 
   /// Activa una alerta de pánico para el vecino ya aprobado. `categoria`
-  /// es una de: robo, sospechoso, medica, otro. Si el servidor rechaza el
-  /// pedido lanza [ErrorApi] (403 = el vecino no está aprobado).
+  /// es una de: robo, sospechoso, medica, otro. `lat`/`lon` son opcionales:
+  /// si vienen los dos, el servidor manda la alerta con ESA ubicación (la
+  /// del momento) en vez de la dirección del domicilio — para cuando la
+  /// emergencia es donde estás vos, no en tu casa. Si el servidor rechaza
+  /// el pedido lanza [ErrorApi] (403 = el vecino no está aprobado).
   static Future<void> activarPanico({
     required String idVecino,
     required String categoria,
+    double? lat,
+    double? lon,
   }) async {
     final resp = await http
         .post(
           Uri.parse('$baseUrl/api/panico'),
           headers: _headersJson,
-          body: jsonEncode({'id_vecino': idVecino, 'categoria': categoria}),
+          body: jsonEncode({
+            'id_vecino': idVecino,
+            'categoria': categoria,
+            if (lat != null && lon != null) 'lat': lat,
+            if (lat != null && lon != null) 'lon': lon,
+          }),
         )
         .timeout(_espera);
     if (resp.statusCode != 200) throw _error(resp);

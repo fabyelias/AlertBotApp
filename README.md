@@ -111,6 +111,18 @@ aprobando vecinos desde Telegram exactamente como hasta ahora.
    herramientas *solo de administrador* en el bot — no tiene sentido
    exponérselas a un vecino común. 🎙️ **Comando de voz** sigue en pausa
    (ver pendiente #2).
+   - **Elegir desde dónde avisa el botón de Pánico** (`_confirmarYActivar`
+     en `inicio.dart`): antes, toda alerta se mandaba siempre con la
+     dirección del domicilio guardado — un problema si el vecino ve por
+     cámara que le están entrando a robar la casa estando él en otro
+     lado: había que avisar a los vecinos de SU CASA, no a los de donde
+     está parado. Ahora, al confirmar la categoría, elige "Mi domicilio"
+     (de siempre, no depende del GPS) o "Donde estoy" (pide la ubicación
+     actual con `Geolocator.getCurrentPosition()` recién en ese momento,
+     no antes) — esa elección define tanto a qué vecinos les llega (el
+     filtro por radio del lado del bot) como qué dirección ven en el
+     aviso (la del domicilio, o un link de Google Maps a la ubicación
+     actual, ya que esa no tiene una dirección de texto guardada).
 ✅ **Conectada al backend real** (bot de Telegram, repo
    [fabyelias/AlertBot](https://github.com/fabyelias/AlertBot)):
    registro, consulta de estado y botón de pánico funcionan de punta a
