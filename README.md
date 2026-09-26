@@ -284,6 +284,83 @@ falta (marcado quién lo hace):
    `gaston marquez`/pruebas de esta sesión no deberían quedar mezclados
    con los de verdad.
 
+### Texto listo para copiar en la ficha
+
+**Nombre de la app** (máx. 30 caracteres):
+```
+AlertBot - Seguridad Barrial
+```
+
+**Descripción breve** (máx. 80 caracteres):
+```
+Botón de pánico y rondas vecinales para cuidar tu barrio, en comunidad
+```
+
+**Categoría sugerida:** Estilo de vida (es la que usan otras apps de
+comunidad/barrio en Play Store).
+
+**Ícono:** `assets/icono/icono.png` (512×512, ya cumple el requisito).
+
+**Gráfico de funciones** (1024×500, obligatorio): `assets/playstore/
+grafico_funciones.png` — generado con los mismos colores e ícono de la
+app, ya listo para subir tal cual.
+
+**Capturas de pantalla** (mínimo 2, tamaño de tu celular): sacale unas
+4-6 a la tablet — Inicio, categorías de Pánico, Rondas, Foto/clip, y
+Sonido de alertas son las más representativas.
+
+**Descripción completa** (máx. 4000 caracteres):
+```
+AlertBot es la app de seguridad vecinal para cuidar tu barrio en comunidad, junto a tus vecinos.
+
+🆘 Botón de Pánico
+Con un toque, avisás a los vecinos aprobados que estén cerca tuyo (o cerca de tu casa) que algo está pasando. Elegís la categoría (robo, persona sospechosa, emergencia médica u otra) y, si estás lejos de tu casa cuando ves que algo pasa ahí, podés mandar la alerta con la dirección de tu domicilio en vez de con tu ubicación actual.
+
+🚶 Rondas vecinales
+Marcá cuándo estás haciendo una ronda por el barrio, para que los demás sepan quién está cuidando en ese momento, y cerrala con una novedad si viste algo (o "Sin novedades" si todo estuvo tranquilo).
+
+📸 Foto y clip
+Compartí una foto o un video corto con tus vecinos si ves algo raro — se puede reportar contenido inapropiado directamente al administrador.
+
+🔔 Notificaciones con sirena
+Elegí entre varias sirenas de alerta, para que un aviso de AlertBot se distinga de cualquier otra notificación, y no te lo pierdas ni con el celular bloqueado o la app cerrada.
+
+📍 Solo lo necesario, nunca más
+Los demás vecinos ven tu nombre, apellido y dirección junto a la alerta, nunca tu usuario de Telegram ni ningún otro dato de contacto, así que nadie puede escribirte directo. No hay chat entre vecinos ni se comparten fotos fuera de una alerta.
+
+👨‍👩‍👧 Familia
+El titular de la vivienda puede sumar hasta 3 integrantes de su familia con una invitación de un solo uso.
+
+✅ Registro con aprobación
+Cada vecino nuevo queda pendiente hasta que el administrador del barrio lo aprueba, así el grupo se mantiene solo con gente real del barrio.
+
+AlertBot funciona junto al bot de Telegram del mismo barrio: quien prefiera Telegram usa el bot, quien prefiera una app la usa acá, y ambos reciben las mismas alertas.
+```
+
+### Formulario "Seguridad de los datos" (Data safety)
+
+Play Console va guiando pregunta por pregunta — esto es la respuesta de
+fondo para cada categoría que va a preguntar (los textos exactos del
+formulario cambian de vez en cuando del lado de Google, así que
+conviene ir cotejando contra esto en vez de copiarlo literal):
+
+| Tipo de dato | ¿Se recolecta? | ¿Se comparte con terceros? | Para qué | ¿Obligatorio? |
+|---|---|---|---|---|
+| Ubicación aproximada y precisa | Sí | No | Funcionamiento de la app (avisar a vecinos cercanos) | Sí, la del domicilio; la del momento es opcional |
+| Nombre y apellido | Sí | No | Funcionamiento de la app | Sí |
+| Dirección física | Sí | No | Funcionamiento de la app | Sí |
+| Fotos y videos | Sí (solo si el vecino elige compartir uno) | Sí, con Telegram (el mismo sistema se apoya en la API de Telegram para relayar el archivo) | Funcionamiento de la app | No |
+| Identificadores del dispositivo (token de notificaciones) | Sí | Sí, con Firebase Cloud Messaging (Google), para poder mandar el push | Funcionamiento de la app | Sí |
+
+**No se recolecta:** datos financieros, de salud, contactos, historial
+de navegación/búsqueda, ni analíticas/reportes de fallas (la app no usa
+Firebase Analytics ni Crashlytics, solo Firebase Messaging).
+
+**Cifrado en tránsito:** sí (HTTPS contra el backend en Railway).
+**Botón para borrar los datos:** no hay uno en la app todavía — se pide
+por Telegram al administrador (contalo así en esa pregunta del
+formulario).
+
 ## Estructura
 
 ```
