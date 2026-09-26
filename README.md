@@ -217,6 +217,73 @@ celular por USB o abrí un emulador, y tocá "Run" (o `flutter run`).
 4. Corré el build — te va a generar el `.aab`/`.apk` para instalar
    directo, sin pasar por tu compu.
 
+## Publicar en Play Store
+
+Esto no es un solo paso — es una lista. Lo que ya está hecho, y lo que
+falta (marcado quién lo hace):
+
+1. ✅ **Firma de release, del lado del código.** `android/app/
+   build.gradle.kts` ya sabe usar una clave de release de verdad para
+   el `buildType release` — la busca primero en variables de entorno
+   (`CM_KEYSTORE_PATH`/`CM_KEYSTORE_PASSWORD`/`CM_KEY_ALIAS`/
+   `CM_KEY_PASSWORD`) y si no en `android/key.properties` (nunca se
+   versiona). Mientras ninguna de las dos exista, cae solo a la clave
+   de debug, así que esto no rompe nada de lo que ya funciona.
+   ⏳ **Falta que vos**: en Codemagic → tu app → *Distribution* →
+   *Android code signing*, generes (o subas) tu propia clave de
+   release ahí — **nunca la de debug** (`android/app/debug.keystore`,
+   que es pública a propósito, ver más arriba). Guardala vos también
+   aparte (Codemagic no te la vuelve a mostrar): si la perdés, no vas
+   a poder subir nunca más una actualización a esta misma ficha de
+   Play Store.
+2. ⏳ **Cambiar el `applicationId`** (hoy `com.example.alertbot_app`,
+   un placeholder que Google rechaza — y que **no se puede cambiar
+   nunca** una vez publicado). Elegido: `com.alertbot.app`. Antes de
+   tocar el código hace falta:
+   - Ir a [Firebase console](https://console.firebase.google.com/) →
+     proyecto `alertbotapp` → ⚙️ Configuración del proyecto → "Tus
+     apps" → Agregar app → Android → registrarla con el paquete
+     `com.alertbot.app`.
+   - Descargar el `google-services.json` actualizado (va a incluir el
+     nuevo registro) y pasármelo, para reemplazar
+     `android/app/google-services.json` a la vez que cambio el
+     `applicationId` en el mismo commit — si se hace por separado, el
+     build se rompe (el plugin de Firebase no encuentra un cliente
+     para el paquete nuevo).
+   - Ojo: al cambiar el `applicationId`, Android trata la app como
+     **una app distinta** de la que ya tenés instalada de prueba (no
+     es una actualización) — vas a tener que registrarte de nuevo en
+     la versión nueva. Podés dejar la vieja instalada en paralelo un
+     tiempo si querés.
+3. ✅ **Build en `.aab` (App Bundle), no `.apk`.** Play Store lo exige.
+   Una vez que configures la firma de release en el paso 1, activá en
+   Codemagic la publicación a Play Store (o simplemente elegí
+   `appbundle` como artefacto) — con la firma de release ya
+   enganchada, el `.aab` sale firmado correcto.
+4. ✅ **Política de privacidad**: pública en `GET /privacidad` del
+   backend (`https://<tu-dominio-de-railway>/privacidad`) — obligatoria
+   porque la app pide ubicación, cámara y notificaciones. Cargá esa URL
+   en Play Console cuando te la pida.
+5. ⏳ **Cuenta de Google Play Console** — la creás vos con tu cuenta de
+   Google (pago único de USD 25). Desde ahí: nombre y descripción de
+   la ficha, ícono (ya está en `assets/icono/`), capturas de pantalla
+   (sacale unas cuantas a la tablet con la app abierta en las
+   pantallas principales), cuestionario de clasificación de contenido,
+   y el formulario de "Seguridad de los datos" (qué pide la app —
+   ubicación, cámara, notificaciones — y para qué; la política de
+   privacidad de arriba ya lo explica en detalle, es cuestión de
+   resumirlo ahí).
+6. ⏳ **Prueba cerrada obligatoria.** Google exige que las cuentas
+   nuevas pasen **mínimo 12 testers activos durante 14 días** en una
+   pista de "prueba cerrada" antes de poder publicar en producción —
+   no es opcional ni algo que se pueda apurar. Hay que sumar 12 vecinos
+   o familiares que instalen la app (Play Console te da un link de
+   invitación) y la usen esas dos semanas.
+7. ⏳ **Limpiar perfiles de prueba** en la base de datos del bot antes
+   de invitar a vecinos reales (ver README de AlertBot) — todos los
+   `gaston marquez`/pruebas de esta sesión no deberían quedar mezclados
+   con los de verdad.
+
 ## Estructura
 
 ```

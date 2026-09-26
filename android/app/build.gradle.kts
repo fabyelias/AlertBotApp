@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
@@ -5,6 +8,31 @@ plugins {
     // Firebase: procesa google-services.json (ver README, pendiente #1).
     id("com.google.gms.google-services")
 }
+
+// Clave de release: nunca hardcodeada acá, sale de Codemagic (panel
+// Distribution → Android code signing), de dos formas posibles según
+// cómo la exponga — probamos las dos, ninguna pisa a la otra:
+// 1) Variables de entorno CM_KEYSTORE_PATH/CM_KEYSTORE_PASSWORD/
+//    CM_KEY_ALIAS/CM_KEY_PASSWORD, ya en el ambiente del build.
+// 2) android/key.properties (NO se versiona, ver .gitignore), armado
+//    solo por Codemagic con esos mismos cuatro datos.
+// Si no está ninguna (local, o todavía no la configuraste), cae a la
+// clave de debug — ver signingConfigs y buildTypes más abajo.
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
+fun datoDeRelease(envVar: String, propKey: String): String? =
+    System.getenv(envVar) ?: keystoreProperties.getProperty(propKey)
+
+val releaseStoreFile = datoDeRelease("CM_KEYSTORE_PATH", "storeFile")
+val releaseStorePassword = datoDeRelease("CM_KEYSTORE_PASSWORD", "storePassword")
+val releaseKeyAlias = datoDeRelease("CM_KEY_ALIAS", "keyAlias")
+val releaseKeyPassword = datoDeRelease("CM_KEY_PASSWORD", "keyPassword")
+val hayClaveDeRelease = releaseStoreFile != null && releaseStorePassword != null &&
+    releaseKeyAlias != null && releaseKeyPassword != null
 
 android {
     namespace = "com.example.alertbot_app"
@@ -39,6 +67,18 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
+        // Solo se crea si Codemagic mandó la clave de release de verdad
+        // (ver arriba) — nunca la de debug, ni nada hardcodeado acá, a
+        // diferencia de la de arriba (que sí es pública a propósito, ver
+        // el comentario de esa).
+        if (hayClaveDeRelease) {
+            create("release") {
+                storeFile = file(releaseStoreFile!!)
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
     }
 
     defaultConfig {
@@ -61,9 +101,11 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Con la clave de release configurada en Codemagic, la usa
+            // (obligatorio para subir a Play Store). Si todavía no la
+            // configuraste, cae a la de debug, para no romper builds de
+            // prueba mientras tanto.
+            signingConfig = if (hayClaveDeRelease) signingConfigs.getByName("release") else signingConfigs.getByName("debug")
         }
     }
 }
